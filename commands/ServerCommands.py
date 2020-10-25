@@ -6,6 +6,7 @@ import datetime
 
 server_liaison = 769659653096472634
 event_host = 769659653096472629
+server_banned = 769659653096472636
 senior_admin = 769659653129896016
 admin = 769659653121900553
 master_builder = 769659653121900550
@@ -38,7 +39,7 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @commands.check(is_liaison)
     async def eventhost(self, ctx, user: discord.Member):
-        'Add or remove event host role from users - liaison only'
+        'Add or remove event host role - liaison only'
         eventhostrole = ctx.guild.get_role(event_host)
         if eventhostrole in user.roles:
             await user.remove_roles(eventhostrole)
@@ -46,6 +47,18 @@ class ServerCommands(commands.Cog):
         else:
             await user.add_roles(eventhostrole)
             await ctx.send(f'```Succesfully added Event Host to {user.name}```')
+    
+    @commands.command()
+    @commands.check(is_staff)
+    async def serverban(self, ctx, user: discord.Member):
+        'Add or remove server banned role'
+        serverbannedrole = ctx.guild.get_role(server_banned)
+        if serverbannedrole in user.roles:
+            await user.remove_roles(serverbannedrole)
+            await ctx.send(f'Took Server Banned role from {user.name}')
+        else:
+            await user.add_roles(serverbannedrole)
+            await ctx.send(f'Added Server Banned role to {user.name}')
     
     @commands.command()
     @commands.check(is_staff)
