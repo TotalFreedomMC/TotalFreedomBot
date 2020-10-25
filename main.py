@@ -73,7 +73,7 @@ async def on_raw_reaction_add(payload):
     else:
         for role_id, msg_id, emoji in bot.reaction_roles:
             if msg_id == payload.message_id and emoji == str(payload.emoji.name.encode('utf-8')):
-                await payload.member.add_roles(bot.get_guild(payload.guild_id).get_role(role_id))
+                await payload.member.add_roles(bot.get_guild(payload.guild_id).get_role(role_id), reason='reaction')
 
 @bot.event
 async def on_raw_reaction_remove(payload):
@@ -82,7 +82,7 @@ async def on_raw_reaction_remove(payload):
     else:
         for role_id, msg_id, emoji in bot.reaction_roles:
             if msg_id == payload.message_id and emoji == str(payload.emoji.name.encode('utf-8')):
-                await bot.get_guild(payload.guild_id).get_member(payload.user_id).remove_roles(bot.get_guild(payload.guild_id).get_role(role_id))
+                await bot.get_guild(payload.guild_id).get_member(payload.user_id).remove_roles(bot.get_guild(payload.guild_id).get_role(role_id), reason='reaction')
 
 @bot.command()
 @commands.has_permissions(manage_roles=True)
