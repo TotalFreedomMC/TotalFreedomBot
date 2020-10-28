@@ -1,5 +1,0 @@
-confirm = "✅"
-
-clipboard = "📋"
-
-cancel = "❌"
