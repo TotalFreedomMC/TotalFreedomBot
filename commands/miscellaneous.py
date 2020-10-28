@@ -15,7 +15,8 @@ class Miscellaneous(commands.Cog):
         em.description = 'Bot offline.'
         await ctx.send(embed=em)
         await self.bot.logout()
-  
+        return
+    
     @is_dev()
     @commands.command(name='debug')
     async def debug(self, ctx, *, cmd):
