@@ -126,7 +126,7 @@ class ServerCommands(commands.Cog):
     async def ip(self, ctx):
         'Returns the server IP'
         await ctx.send('play.totalfreedom.me')
-        #pass # discordSRV responds already.    
+        #pass #discordSRV responds already.    
    
     @commands.command()
     @is_staff()
