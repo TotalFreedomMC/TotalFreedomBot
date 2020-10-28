@@ -1,5 +1,4 @@
 import discord
-import random
 import aiofiles
 import re
 
