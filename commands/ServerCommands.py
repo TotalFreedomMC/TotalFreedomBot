@@ -18,33 +18,45 @@ def format_list_entry(embed, list, name):
     embed.add_field(name="{} ({})".format(name, len(list)), value=", ".join(list), inline=False)
     return embed
 
-def is_staff(ctx):
-    user = ctx.message.author
-    for role in user.roles:
-        if role.id in [admin, senior_admin]:
-            return True
-    return False
-        
-def is_liaison(ctx):
-    user = ctx.message.author
-    for role in user.roles:
-        if role.id == server_liaison:
-          return True
-    return False    
-            
-def is_senior(ctx):
-    user = ctx.message.author
-    for role in user.roles:
-        if role.id == senior_admin:
-          return True
-    return False
+class no_permission(commands.MissingPermissions):
+    pass
+    
+def is_staff():
+    def predicate(ctx):
+        user = ctx.message.author
+        for role in user.roles:
+            if role.id in [admin, senior_admin]:
+                return True
+        else:
+            raise no_permission(['IS_STAFF_MEMBER'])
+    return commands.check(predicate)
+   
+def is_liaison():
+    def predicate(ctx):
+        user = ctx.message.author
+        for role in user.roles:
+            if role.id == server_liaison:
+              return True
+        else:
+            raise no_permission(['IS_SERVER_LIAISON'])  
+    return commands.check(predicate)
+     
+def is_senior():
+    def predicate(ctx):
+        user = ctx.message.author
+        for role in user.roles:
+            if role.id == senior_admin:
+              return True
+        else:
+            raise no_permission(['IS_SENIOR_ADMIN'])
+    return commands.check(predicate)
 
 class ServerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
     @commands.command()
-    @commands.check(is_liaison)
+    @is_liaison()
     async def eventhost(self, ctx, user: discord.Member):
         'Add or remove event host role - liaison only'
         eventhostrole = ctx.guild.get_role(event_host)
@@ -56,7 +68,7 @@ class ServerCommands(commands.Cog):
             await ctx.send(f'```Succesfully added Event Host to {user.name}```')
     
     @commands.command()
-    @commands.check(is_staff)
+    @is_staff()
     async def serverban(self, ctx, user: discord.Member):
         'Add or remove server banned role'
         serverbannedrole = ctx.guild.get_role(server_banned)
@@ -68,38 +80,38 @@ class ServerCommands(commands.Cog):
             await ctx.send(f'Added Server Banned role to {user.name}')
     
     @commands.command()
-    @commands.check(is_staff)
+    @is_staff()
     async def start(self, ctx):
         'Not currently working'
         startEmbed = discord.Embed(description='start working out fatass')
         await ctx.send(embed=startEmbed)
         
     @commands.command()
-    @commands.check(is_staff)
+    @is_staff()
     async def stop(self, ctx):
         'Not currently working'
         stopEmbed = discord.Embed(description='stop being so sus')
         await ctx.send(embed=stopEmbed)
     
     @commands.command()
-    @commands.check(is_senior)
+    @is_senior()
     async def kill(self, ctx):
         'Not currently working'
         killEmbed = discord.Embed(description='kill youself')
         await ctx.send(embed=killEmbed)
     
     @commands.command()
-    @commands.check(is_staff)
+    @is_staff()
     async def restart(self, ctx):
         'Not currently working'
         restartEmbed = discord.Embed(description='cant restart a dead server idiot')
         await ctx.send(embed=restartEmbed)
     
     @commands.command()
-    @commands.check(is_senior)
+    @is_senior()
     async def console(self, ctx,*, command):
         'Not currently working'
-        await ctx.send(f'```:[{str(datetime.datetime.utcnow().replace(microsecond=0))[11:]} INFO]: {ctx.author.name} issued server command: /{command}```')
+        await ctx.send(f'```:[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: {ctx.author.name} issued server command: /{command}```')
     
     
     @commands.command(aliases=['status'])
@@ -157,7 +169,7 @@ class ServerCommands(commands.Cog):
         await ctx.send(embed=em)
         
     @commands.command()
-    @commands.check(is_staff)
+    @is_staff()
     async def archivereports(self, ctx):
         """Archive all in-game reports older than 24 hours"""
         count = 0
