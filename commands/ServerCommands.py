@@ -1,8 +1,8 @@
 import discord
 
 from discord.ext import commands
-import datetime
-
+from datetime import datetime
+import requests
 
 server_liaison = 769659653096472634
 event_host = 769659653096472629
@@ -10,6 +10,13 @@ server_banned = 769659653096472636
 senior_admin = 769659653129896016
 admin = 769659653121900553
 master_builder = 769659653121900550
+reports_channel_id = 769659654791233585
+archived_reports_channel_id = 769659655033978900
+
+
+def format_list_entry(embed, list, name):
+    embed.add_field(name="{} ({})".format(name, len(list)), value=", ".join(list), inline=False)
+    return embed
 
 def is_staff(ctx):
     user = ctx.message.author
@@ -97,14 +104,78 @@ class ServerCommands(commands.Cog):
     
     @commands.command(aliases=['status'])
     async def state(self, ctx):
-        'Not currently working'
-        await ctx.send('```The server is currently fucked.```')
+        'Gets the current status of the Server'
+        em = discord.Embed()
+        try: 
+            json = requests.get("http://play.totalfreedom.me:28966/list?json=true").json()
+            em.description = 'Server is online'
+        except ConnectionError:
+            em.description = 'Server is offline'
+        await ctx.send(embed=em)
         
     @commands.command()
     async def list(self, ctx):
-        'Not currently working'
-        onlinePlayers = discord.Embed(title='Players Online', description='fuckall mate')
-        await ctx.send(embed=onlinePlayers)
+        'Gives a list of online players.'
+        em = discord.Embed()
+        em.title = "Player List"
+        try: 
+            json = requests.get("http://play.totalfreedom.me:28966/list?json=true").json()
+        except ConnectionError:
+            em.description = 'Server is offline'
+        else:
+            if json["online"] == 0:
+                em.description = "There are no online players"
+            else:
+                em.description = "There are {} / {} online players".format(json["online"], json["max"])
+                owners = json["owners"]
+                if len(owners) != 0:
+                    em = format_list_entry(em, owners, "Server Owners")
+                executives = json["executives"]
+                if len(executives) != 0:
+                    em = format_list_entry(em, executives, "Executives")
+                developers = json["developers"]
+                if len(developers) != 0:
+                    em = format_list_entry(em, developers, "Developers")
+                senior_admins = json["senioradmins"]
+                if len(senior_admins) != 0:
+                    em = format_list_entry(em, senior_admins, "Senior Admins")
+                admins = json["admins"]
+                if len(admins) != 0:
+                    em = format_list_entry(em, admins, "Admins")
+                #trialadmins = json["trialadmins"]
+                #if len(trialadmins) != 0:
+                    #em = format_list_entry(em, trialmods, "Trial Mods")
+                masterbuilders = json["masterbuilders"]
+                if len(masterbuilders) != 0:
+                    em = format_list_entry(em, masterbuilders, "Master Builders")
+                operators = json["operators"]
+                if len(operators) != 0:
+                    em = format_list_entry(em, operators, "Operators")
+                imposters = json["imposters"]
+                if len(imposters) != 0:
+                    em = format_list_entry(em, imposters, "Imposters")
+        await ctx.send(embed=em)
+        
+    @commands.command()
+    @commands.check(is_staff)
+    async def archivereports(self, ctx):
+        """Archive all in-game reports older than 24 hours"""
+        count = 0
+        reports_channel = self.bot.get_channel(reports_channel_id)
+        archived_reports_channel = self.bot.get_channel(archived_reports_channel_id)
+        await ctx.channel.trigger_typing()
+        async for report in reports_channel.history(limit=100):
+            try:
+                embed = report.embeds[0]
+            except:
+                await report.delete()
+            time = embed.timestamp
+            difference = datetime.now() - time
+            if difference.days >= 0:
+                await report.delete()
+                await archived_reports_channel.send("Message archived because it is older than 24 hours", embed=embed)
+                count += 1
+        await ctx.send("Archived **{}** reports that are older than 24 hours".format(count))
     
 def setup(bot):
     bot.add_cog(ServerCommands(bot))
