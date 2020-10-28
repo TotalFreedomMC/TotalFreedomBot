@@ -53,7 +53,6 @@ class Events(commands.Cog):
                 await message.delete()
                 await message.channel.send(f"{message.author.mention} do not post invite links to other discord servers.")
                 return
-        await self.bot.process_commands(message)
     
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
