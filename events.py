@@ -9,8 +9,6 @@ from datetime import datetime
 from discord.ext import commands
 from checks import *
 from functions import *
-
-
 from unicode import *
 
 class Events(commands.Cog):
