@@ -1,10 +1,12 @@
 import discord
+import requests
 
 from checks import *
 from discord.ext import commands
 from datetime import datetime
-import requests
 from functions import fix_reports, format_list_entry
+from unicode import *
+from telnetlib import Telnet
 
 class ServerCommands(commands.Cog):
     def __init__(self, bot):
@@ -44,30 +46,76 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_staff()
     async def stop(self, ctx):
-        'Not currently working'
-        stopEmbed = discord.Embed(description='stop being so sus')
-        await ctx.send(embed=stopEmbed)
-    
+        'Stops the server'
+        em = discord.Embed()
+        try:
+            self.bot.telnet_session.write(bytes('stop', 'ascii') + b"\r\n")
+        except:
+            em.title='Command error'
+            em.colour = 0xFF0000
+            em.description='Something went wrong'
+            await ctx.send(embed=em)
+        else:
+            em.title = 'Success'
+            em.colour = 0x00FF00
+            em.description = 'Server stopped.'
+            await ctx.send(embed=em)
+        
     @commands.command()
     @is_senior()
     async def kill(self, ctx):
-        'Not currently working'
-        killEmbed = discord.Embed(description='kill youself')
-        await ctx.send(embed=killEmbed)
+        'Kills the server'
+        em = discord.Embed()
+        try:
+            self.bot.telnet_session.write(bytes('telnet.stop', 'ascii') + b"\r\n")
+        except:
+            em.title='Command error'
+            em.colour = 0xFF0000
+            em.description='Something went wrong'
+            await ctx.send(embed=em)
+        else:
+            em.title = 'Success'
+            em.colour = 0x00FF00
+            em.description = 'Killed the server.'
+            await ctx.send(embed=em)
+        
     
     @commands.command()
     @is_staff()
     async def restart(self, ctx):
-        'Not currently working'
-        restartEmbed = discord.Embed(description='cant restart a dead server idiot')
-        await ctx.send(embed=restartEmbed)
+        'Restarts the server'
+        em = discord.Embed()
+        try:
+            self.bot.telnet_session.write(bytes('restart', 'ascii') + b"\r\n")
+        except:
+            em.title='Command error'
+            em.colour = 0xFF0000
+            em.description='Something went wrong'
+            await ctx.send(embed=em)
+        else:
+            em.title = 'Success'
+            em.colour = 0x00FF00
+            em.description = 'Server restarting.'
+            await ctx.send(embed=em)
     
     @commands.command()
     @is_senior()
     async def console(self, ctx,*, command):
-        'Not currently working'
-        await ctx.send(f'```:[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: {ctx.author.name} issued server command: /{command}```')
-    
+        'Send a command as console'
+        '''await ctx.send(f'```:[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: {ctx.author.name} issued server command: /{command}```')'''
+        em = discord.Embed()
+        try:
+            self.bot.telnet_session.write(bytes(command, 'ascii') + b"\r\n")
+        except Exception as e:
+            em.title='Command error'
+            em.colour = 0xFF0000
+            em.description = f'{e}'
+            await ctx.send(embed=em)
+        else:
+            em.title = 'Success'
+            em.colour = 0x00FF00
+            em.description = 'Command sent.'
+            await ctx.send(embed=em)
     
     @commands.command(aliases=['status'])
     async def state(self, ctx):
@@ -75,9 +123,12 @@ class ServerCommands(commands.Cog):
         em = discord.Embed()
         try: 
             json = requests.get("http://play.totalfreedom.me:28966/list?json=true").json()
-            em.description = 'Server is online'
-        except ConnectionError:
+        except:
             em.description = 'Server is offline'
+            em.colour = 0xFF0000
+        else:
+            em.description = 'Server is online'
+            em.colour = 0x00FF00
         await ctx.send(embed=em)
         
     @commands.command()
