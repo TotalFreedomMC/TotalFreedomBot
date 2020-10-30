@@ -1,16 +1,22 @@
 import discord
+import random
 import aiofiles
 import re
+import time
+import telnet
 
 from datetime import datetime
 from discord.ext import commands
 from checks import *
 from functions import *
 
+
+from unicode import *
+
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-   
+
     @commands.Cog.listener()
     async def on_ready(self):
         self.bot.reaction_roles = []
@@ -34,6 +40,8 @@ class Events(commands.Cog):
             print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Guilds] Connected to guild: {guild.name}, Owner: {guild.owner}')
         global starttime
         starttime = datetime.utcnow()
+        
+        
     
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -45,9 +53,22 @@ class Events(commands.Cog):
                 await message.delete()
         bypass_roles = [discord_admin, discord_mod]
         bypass = False
-        for role in message.author.roles:
-            if role.id in bypass_roles:
-                bypass = True
+        if message.author != self.bot.user:
+            for role in message.author.roles:
+                if role.id in bypass_roles:
+                    bypass = True
+        else:
+            if 'Server has started' in message.content: # Telnet reconnect script
+                try:
+                    telnet.connect()
+                except Exception as e:
+                    print('Failed to reconnect telnet: {e}')
+                    time.sleep(5)
+                    try:
+                        telnet.connect()
+                    except Exception as fuckup:
+                        print('Second attempt failed to reconnect telnet: {fuckup}')
+
         if not bypass:
             if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.content) or re.search('discordapp\.com\/invite\/[a-z0-9]+/ig', message.content):
                 await message.delete()
@@ -108,13 +129,16 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         await ctx.send('''```py
-    {}```'''.format(error))
+{}```'''.format(error))
         print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Commands] {ctx.author} failed running: {ctx.message.content} in guild: {ctx.guild.name}')
     
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):
         print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Commands] {ctx.author} ran: {ctx.message.content} in guild: {ctx.guild.name}')
-    
+        bot_logs_channel = self.bot.get_channel(bot_logs_channel_id)
+        log = discord.Embed(title='Logging', description=f'{ctx.author} (ID: {ctx.author.id}) ran: {ctx.message.content}', colour=0xA84300)
+        await bot_logs_channel.send(embed=log)
+        
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.member == self.bot.user:
