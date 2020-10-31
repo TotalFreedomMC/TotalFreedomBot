@@ -7,8 +7,8 @@ class telnet():
     def __init__(self, ip, port, username, password):
         self.ip = ip
         self.port = port
-        self.password = password
         self.username = username
+        self.password = password
         
     def connect(self, *username):
         self.session = Telnet(self.ip, self.port)
