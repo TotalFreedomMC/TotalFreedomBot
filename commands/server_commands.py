@@ -82,7 +82,7 @@ class ServerCommands(commands.Cog):
         for x in range(len(args)):
             command += f'{args[x]} '
         try:
-            if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'noob', 'tban', 'tempban', 'warn', 'mv', 'kick']:
+            if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'noob', 'tban', 'tempban', 'warn', 'mv', 'kick', 'cc']:
                 self.bot.telnet_object.session.write(bytes(command, 'ascii') + b"\r\n")
             else:
                 raise no_permission(['IS_SENIOR_ADMIN'])
