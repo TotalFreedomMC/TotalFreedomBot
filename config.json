@@ -1,0 +1,6 @@
+{
+    "TELNET_IP": "[IP]",
+    "TELNET_PORT": [PORT],
+    "TELNET_USERNAME": "[USERNAME]",
+    "TELNET_PASSWORD": "[PASSWORD]"
+}
