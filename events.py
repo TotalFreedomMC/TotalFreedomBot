@@ -10,9 +10,12 @@ from datetime import datetime
 from discord.ext import commands
 from checks import *
 from functions import *
-
-
 from unicode import *
+
+telnet_ip = "localhost"
+telnet_port = 22
+telnet_username = "root"
+telnet_password = "root"
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -20,6 +23,12 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        config = read_json('config')
+        telnet_ip = config['TELNET_IP']
+        telnet_port = config['TELNET_PORT']
+        telnet_username = config['TELNET_USERNAME']
+        telnet_password = config['TELNET_PASSWORD']
+        
         self.bot.reaction_roles = []
         self.bot.telnet_object = telnet(telnet_ip, telnet_port, telnet_username, telnet_password)
         self.bot.telnet_object.connect()
