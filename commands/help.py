@@ -48,7 +48,7 @@ class Help(commands.Cog):
                     command_list += f'**{ctx.prefix}{command.name}** - {command.help}\n'        
             if command_list:
                 em.add_field(name=cog, value=command_list, inline=False)        
-        em.set_footer(text=f'Requested by {ctx.message.author}', icon_url=tget_avatar(ctx.message.author))
+        em.set_footer(text=f'Requested by {ctx.message.author}', icon_url=get_avatar(ctx.message.author))
         await ctx.send(embed=em)
 
 def setup(bot):
