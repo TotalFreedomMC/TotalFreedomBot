@@ -24,8 +24,8 @@ if __name__ == '__main__':
     for extension in extensions:
         try:
             bot.load_extension(extension)
-            print(f"[{datetime.utcnow().replace(microsecond=0)} INFO]: [Extensions] {extension} loaded successfully")
+            print(f"[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Extensions] {extension} loaded successfully")
         except Exception as e:
-            print(f"[{datetime.utcnow().replace(microsecond=0)} INFO]: [Extensions] {extension} didn't load {e}")
+            print(f"[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Extensions] {extension} didn't load {e}")
 
 bot.run(botToken)
