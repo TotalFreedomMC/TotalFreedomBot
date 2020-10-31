@@ -2,10 +2,12 @@ import discord
 import asyncio
 import telnet
 import time
+import events
 
 from datetime import datetime
 from discord.ext import commands
 from checks import *
+from functions import *
 
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
@@ -36,7 +38,12 @@ class Miscellaneous(commands.Cog):
                 em.colour = 0x00FF00
         elif args[0] == 'name':
             try:
+                self.bot.telnet_object.session.close()
                 self.bot.telnet_object.connect(args[1])
+                events.telnet_username = self.bot.telnet_object.username
+                config = read_json('config')
+                config['TELNET_USERNAME'] = self.bot.telnet_object.username
+                write_json('config', config)
             except Exception as e:
                 em.description = f'Failed config edit: {e}'
                 em.colour = 0xFF0000
