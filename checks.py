@@ -2,11 +2,6 @@ import discord
 
 from discord.ext import commands
 
-telnet_ip = [IP]
-telnet_port = [PORT]
-telnet_password = [PASSWORD]
-telnet_username = 'TotalFreedom'
-
 server_liaison = 769659653096472634
 event_host = 769659653096472629
 server_banned = 769659653096472636
