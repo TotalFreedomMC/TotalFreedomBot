@@ -1,4 +1,5 @@
 import discord
+import json
 
 from discord.ext import commands
 from checks import *
@@ -6,16 +7,6 @@ from checks import *
 def format_list_entry(embed, list, name):
     embed.add_field(name="{} ({})".format(name, len(list)), value=", ".join(list), inline=False)
     return embed
-
-async def fix_reports():
-    reports_channel = bot.get_channel(reports_channel_id)
-    messages = await reports_channel.history(limit=500).flatten()
-    fixed = 0
-    for message in messages:
-        if len(message.reactions) == 0 and message.author == message.guild.me:
-            await message.add_reaction(clipboard)
-            fixed += 1
-    return fixed
 
 def get_avatar(user, animate=True):
     if user.avatar_url:
@@ -25,3 +16,42 @@ def get_avatar(user, animate=True):
     if not animate:
         avatar = avatar.replace(".gif", ".png")
     return avatar
+
+def did_mention_other_user(users, author):
+    for user in users:
+        if user is not author:
+            return True
+    return False
+
+def removed_user_mentions(old, new):
+    users = []
+    for user in old:
+        if user not in new:
+            users.append(user)
+    return users
+
+def removed_role_mentions(old, new):
+    roles = []
+    for role in old:
+        if role not in new:
+            roles.append(role)
+    return roles
+
+def get_avatar(user, animate=True):
+    if user.avatar_url:
+        avatar = str(user.avatar_url).replace(".webp", ".png")
+    else:
+        avatar = str(user.default_avatar_url)
+    if not animate:
+        avatar = avatar.replace(".gif", ".png")
+    return avatar
+
+def read_json(file_name):
+    with open(f'/root/totalfreedom/{file_name}.json', 'r') as file:
+        data = json.load(file)
+    return data
+
+def write_json(file_name, data):
+    with open(f'/root/totalfreedom/{file_name}.json', 'w') as file:
+        json.dump(data,file,indent=4)
+    return data
