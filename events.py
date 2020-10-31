@@ -3,12 +3,15 @@ import random
 import aiofiles
 import re
 import time
-import telnet
+from telnet import telnet
+import checks
 
 from datetime import datetime
 from discord.ext import commands
 from checks import *
 from functions import *
+
+
 from unicode import *
 
 class Events(commands.Cog):
@@ -18,6 +21,10 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.bot.reaction_roles = []
+        self.bot.telnet_object = telnet(telnet_ip, telnet_port, telnet_username, telnet_password)
+        self.bot.telnet_object.connect()
+        
+        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [TELNET] Bot logged into Telnet as: {self.bot.telnet_object.username}')
         
         for file in ['reactionroles.txt']:
             async with aiofiles.open(file, mode='a') as temp:
@@ -28,17 +35,16 @@ class Events(commands.Cog):
                 data = line.split(' ')
                 self.bot.reaction_roles.append((int(data[0]), int(data[1]), data[2].strip('\n')))
         
-        print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Client] {self.bot.user.name} is online.')
+        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Client] {self.bot.user.name} is online.')
         game = discord.Game('play.totalfreedom.me')
         await self.bot.change_presence(status=discord.Status.online, activity=game)
     
         guildCount = len(self.bot.guilds)
-        print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Guilds] self.bot currently in {guildCount} guilds.')
+        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] self.bot currently in {guildCount} guilds.')
         for guild in self.bot.guilds:
-            print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Guilds] Connected to guild: {guild.name}, Owner: {guild.owner}')
+            print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] Connected to guild: {guild.name}, Owner: {guild.owner}')
         global starttime
         starttime = datetime.utcnow()
-        
         
     
     @commands.Cog.listener()
@@ -58,14 +64,14 @@ class Events(commands.Cog):
         else:
             if 'Server has started' in message.content: # Telnet reconnect script
                 try:
-                    telnet.connect()
+                    self.bot.telnet_object.connect()
                 except Exception as e:
-                    print('Failed to reconnect telnet: {e}')
+                    print(f'Failed to reconnect telnet: {e}')
                     time.sleep(5)
                     try:
-                        telnet.connect()
+                        self.bot.telnet_object.connect()
                     except Exception as fuckup:
-                        print('Second attempt failed to reconnect telnet: {fuckup}')
+                        print(f'Second attempt failed to reconnect telnet: {fuckup}')
 
         if not bypass:
             if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.content) or re.search('discordapp\.com\/invite\/[a-z0-9]+/ig', message.content):
@@ -128,11 +134,11 @@ class Events(commands.Cog):
     async def on_command_error(self, ctx, error):
         await ctx.send('''```py
 {}```'''.format(error))
-        print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Commands] {ctx.author} failed running: {ctx.message.content} in guild: {ctx.guild.name}')
+        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} failed running: {ctx.message.content} in guild: {ctx.guild.name}')
     
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):
-        print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Commands] {ctx.author} ran: {ctx.message.content} in guild: {ctx.guild.name}')
+        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} ran: {ctx.message.content} in guild: {ctx.guild.name}')
         bot_logs_channel = self.bot.get_channel(bot_logs_channel_id)
         log = discord.Embed(title='Logging', description=f'{ctx.author} (ID: {ctx.author.id}) ran: {ctx.message.content}', colour=0xA84300)
         await bot_logs_channel.send(embed=log)
