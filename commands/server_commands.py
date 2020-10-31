@@ -82,7 +82,7 @@ class ServerCommands(commands.Cog):
         for x in range(len(args)):
             command += f'{args[x]} '
         try:
-            if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'noob', 'tban', 'tempban', 'warn', 'mv', 'kick', 'cc']:
+            if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'unban', 'unmute', 'smite', 'noob', 'tban', 'tempban', 'warn', 'mv', 'kick', 'cc','say']:
                 self.bot.telnet_object.session.write(bytes(command, 'ascii') + b"\r\n")
             elif args[0] == 'slconfig':
                 if args[1] not in ['add', 'remove']:
