@@ -35,14 +35,9 @@ class Events(commands.Cog):
         
         print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [TELNET] Bot logged into Telnet as: {self.bot.telnet_object.username}')
         
-        for file in ['reactionroles.txt']:
-            async with aiofiles.open(file, mode='a') as temp:
-                pass
-        async with aiofiles.open('reactionroles.txt', mode='r') as file:
-            lines = await file.readlines()
-            for line in lines:
-                data = line.split(' ')
-                self.bot.reaction_roles.append((int(data[0]), int(data[1]), data[2].strip('\n')))
+        reaction_data = read_json('config')
+        self.bot.reaction_roles = reaction_data['reaction_roles']
+        print(self.bot.reaction_roles)
         
         print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Client] {self.bot.user.name} is online.')
         game = discord.Game('play.totalfreedom.me')
@@ -158,7 +153,7 @@ class Events(commands.Cog):
             pass
         else:
             for role_id, msg_id, emoji in self.bot.reaction_roles:
-                if msg_id == payload.message_id and emoji == str(payload.emoji.name.encode('utf-8')):
+                if msg_id == payload.message_id and emoji == str(payload.emoji.name):
                     await payload.member.add_roles(self.bot.get_guild(payload.guild_id).get_role(role_id), reason='reaction')
             if payload.channel_id == reports_channel_id:
                 guild = self.bot.get_guild(guild_id)
@@ -183,7 +178,7 @@ class Events(commands.Cog):
             pass
         else:
             for role_id, msg_id, emoji in self.bot.reaction_roles:
-                if msg_id == payload.message_id and emoji == str(payload.emoji.name.encode('utf-8')):
+                if msg_id == payload.message_id and emoji == str(payload.emoji.name):
                     await self.bot.get_guild(payload.guild_id).get_member(payload.user_id).remove_roles(self.bot.get_guild(payload.guild_id).get_role(role_id), reason='reaction')
                     
 def setup(bot):
