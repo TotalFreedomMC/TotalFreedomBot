@@ -84,9 +84,13 @@ class ServerCommands(commands.Cog):
         try:
             if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'noob', 'tban', 'tempban', 'warn', 'mv', 'kick', 'cc']:
                 self.bot.telnet_object.session.write(bytes(command, 'ascii') + b"\r\n")
+            elif args[0] == 'slconfig':
+                if args[1] not in ['add', 'remove']:
+                    raise no_permission(['IS_SENIOR_ADMIN'])
+                else:
+                    self.bot.telnet_object.session.write(bytes(command, 'ascii') + b"\r\n")
             else:
                 raise no_permission(['IS_SENIOR_ADMIN'])
-                await ctx.send(embed=em)
         except Exception as e:
             em.title='Command error'
             em.colour = 0xFF0000
