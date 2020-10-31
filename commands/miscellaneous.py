@@ -1,6 +1,9 @@
 import discord
 import asyncio
+import telnet
+import time
 
+from datetime import datetime
 from discord.ext import commands
 from checks import *
 
@@ -9,7 +12,7 @@ class Miscellaneous(commands.Cog):
         self.bot = bot
     
     @is_dev()
-    @commands.command(pass_context=True)
+    @commands.command()
     async def killbot(self, ctx):
         em = discord.Embed()
         em.description = 'Bot offline.'
@@ -18,7 +21,44 @@ class Miscellaneous(commands.Cog):
         return
     
     @is_dev()
-    @commands.command(name='debug')
+    @commands.command()
+    async def telnetconfig(self, ctx, *args):
+        em = discord.Embed()
+        em.title = 'Telnet config'
+        if not args or args[0] in ['reconnect', 'connect']:
+            try:
+                self.bot.telnet_object.connect()
+            except Exception as e:
+                em.description = f'Failed reconnection: {e}'
+                em.colour = 0xFF0000
+            else:
+                em.description = 'Reconnection successful'
+                em.colour = 0x00FF00
+        elif args[0] == 'name':
+            try:
+                self.bot.telnet_object.connect(args[1])
+            except Exception as e:
+                em.description = f'Failed config edit: {e}'
+                em.colour = 0xFF0000
+            else:
+                em.description = 'Configuration successful'
+                em.colour = 0x00FF00
+            
+        elif args[0] == 'test':
+            command = ''
+            for x in range(1, len(args)):
+                command += f'{args[x]} '
+            time_sent = str(datetime.utcnow().replace(microsecond=0))[11:]
+            
+            self.bot.telnet_object.session.write(bytes(command, 'ascii') + b"\r\n")
+            self.bot.telnet_object.session.read_until(bytes(f'{time_sent} INFO]:', 'ascii'), 2)
+            next_line = self.bot.telnet_object.session.read_until(bytes('\r\n', 'ascii'), 2)
+            em.description = f"Response from server: {next_line.decode('utf-8')}"
+        await ctx.send(embed=em)
+        
+    
+    @is_dev()
+    @commands.command()
     async def debug(self, ctx, *, cmd):
         'Executes a line of code'
         try:
