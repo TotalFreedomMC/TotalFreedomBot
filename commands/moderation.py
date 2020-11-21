@@ -3,6 +3,7 @@ import datetime
 
 from discord.ext import commands
 from checks import *
+from functions import *
 
 muted_role_id = 769659653121900546
 
@@ -69,11 +70,11 @@ class Moderation(commands.Cog):
     async def setreaction(self, ctx, role : discord.Role=None, msg : discord.Message=None, emoji=None):
         if role and msg and emoji :
             await msg.add_reaction(emoji)
-            self.bot.reaction_roles.append((role.id,msg.id,str(emoji.encode('utf-8'))))
-            
-            async with aiofiles.open("reactionroles.txt", mode='a') as file:
-                emoji_utf = emoji.encode('utf-8')
-                await file.write(f'{role.id} {msg.id} {emoji_utf}\n')
+            self.bot.reaction_roles.append([role.id,msg.id,emoji])
+            data = read_json('config')
+            data['reaction_roles'].append([role.id,msg.id,emoji])
+            print(data['reaction_roles'])
+            write_json('config', data)
     
 def setup(bot):
     bot.add_cog(Moderation(bot))
