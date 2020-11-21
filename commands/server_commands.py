@@ -51,9 +51,35 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_staff()
     async def start(self, ctx):
-        'Not currently working'
-        startEmbed = discord.Embed(description='start working out fatass')
-        await ctx.send(embed=startEmbed)
+        'Starts the server'
+        em = discord.Embed()
+        try:
+            attempt = hit_endpoint('start')
+        except Exception as e:
+            em.title='Command error'
+            em.colour = 0xFF0000
+            em.description='Something went wrong'
+            print(f'Error while starting server: {e}')
+            await ctx.send(embed=em)
+        else:
+            if 'error' in attempt.lower():
+                em.title='Command error'
+                em.colour = 0xFF0000
+                em.description=f'{attempt}'
+                await ctx.send(embed=em)
+            else:
+                em.title = 'Success'
+                em.colour = 0x00FF00
+                em.description = f'{attempt}'
+                await ctx.send(embed=em)
+    
+    @commands.command()
+    async def uptime(self, ctx):
+        "Returns the uptime of the VPS"
+        em = discord.Embed()
+        em.title = 'VPS Uptime Information'
+        em.description = hit_endpoint('uptime')
+        await ctx.send(embed=em)
         
     @commands.command()
     @is_staff()
@@ -61,17 +87,24 @@ class ServerCommands(commands.Cog):
         'Stops the server'
         em = discord.Embed()
         try:
-            self.bot.telnet_object.session.write(bytes('stop', 'ascii') + b"\r\n")
-        except:
+            attempt = hit_endpoint('stop')
+        except Exception as e:
             em.title='Command error'
             em.colour = 0xFF0000
             em.description='Something went wrong'
+            print(f'Error while stopping server: {e}')
             await ctx.send(embed=em)
         else:
-            em.title = 'Success'
-            em.colour = 0x00FF00
-            em.description = 'Server stopped.'
-            await ctx.send(embed=em)
+            if 'error' in attempt.lower():
+                em.title='Command error'
+                em.colour = 0xFF0000
+                em.description=f'{attempt}'
+                await ctx.send(embed=em)
+            else:
+                em.title = 'Success'
+                em.colour = 0x00FF00
+                em.description = f'{attempt}'
+                await ctx.send(embed=em)
     
     @commands.command(aliases=['adminconsole', 'ac'])
     @is_staff()
@@ -108,17 +141,25 @@ class ServerCommands(commands.Cog):
         'Kills the server'
         em = discord.Embed()
         try:
-            self.bot.telnet_object.session.write(bytes('telnet.stop', 'ascii') + b"\r\n")
-        except:
+            attempt = hit_endpoint('kill')
+        except Exception as e:
             em.title='Command error'
             em.colour = 0xFF0000
             em.description='Something went wrong'
+            print(f'Error while killing server: {e}')
             await ctx.send(embed=em)
         else:
-            em.title = 'Success'
-            em.colour = 0x00FF00
-            em.description = 'Killed the server.'
-            await ctx.send(embed=em)
+            if 'error' in attempt.lower():
+                em.title='Command error'
+                em.colour = 0xFF0000
+                em.description='{attempt}'
+                print(f'Error while killing server: {e}')
+                await ctx.send(embed=em)
+            else:
+                em.title = 'Success'
+                em.colour = 0x00FF00
+                em.description = f'{attempt}'
+                await ctx.send(embed=em)
         
     
     @commands.command()
@@ -128,10 +169,11 @@ class ServerCommands(commands.Cog):
         em = discord.Embed()
         try:
             self.bot.telnet_object.session.write(bytes('restart', 'ascii') + b"\r\n")
-        except:
+        except Exception as e:
             em.title='Command error'
             em.colour = 0xFF0000
             em.description='Something went wrong'
+            print(f'Error while restarting server: {e}')
             await ctx.send(embed=em)
         else:
             em.title = 'Success'
@@ -143,7 +185,6 @@ class ServerCommands(commands.Cog):
     @is_senior()
     async def console(self, ctx,*, command):
         'Send a command as console'
-        '''await ctx.send(f'```:[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: {ctx.author.name} issued server command: /{command}```')'''
         em = discord.Embed()
         try:
             self.bot.telnet_object.session.write(bytes(command, 'ascii') + b"\r\n")
@@ -163,7 +204,7 @@ class ServerCommands(commands.Cog):
         'Gets the current status of the Server'
         em = discord.Embed()
         try: 
-            json = requests.get("http://play.totalfreedom.me:28966/list?json=true").json()
+            json = requests.get("http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
         except:
             em.description = 'Server is offline'
             em.colour = 0xFF0000
@@ -172,16 +213,13 @@ class ServerCommands(commands.Cog):
             em.colour = 0x00FF00
         await ctx.send(embed=em)
         
-    @commands.command()
-    async def list(self, ctx):
+    @commands.command(name='list')
+    async def online(self, ctx):
         'Gives a list of online players.'
         em = discord.Embed()
         em.title = "Player List"
         try: 
-            json = requests.get("http://play.totalfreedom.me:28966/list?json=true").json()
-        except ConnectionError:
-            em.description = 'Server is offline'
-        else:
+            json = requests.get("http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
             if json["online"] == 0:
                 em.description = "There are no online players"
             else:
@@ -213,11 +251,13 @@ class ServerCommands(commands.Cog):
                 imposters = json["imposters"]
                 if len(imposters) != 0:
                     em = format_list_entry(em, imposters, "Imposters")
+        except:
+            em.description = 'Server is offline'
         await ctx.send(embed=em)
     @commands.command()
     async def ip(self, ctx):
         'Returns the server IP'
-        await ctx.send('play.totalfreedom.me')
+        await ctx.send(embed=discord.Embed(description='play.totalfreedom.me',title='Server IP'))
         #pass #discordSRV responds already.    
    
     @commands.command()
