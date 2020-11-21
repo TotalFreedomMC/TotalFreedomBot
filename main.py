@@ -5,6 +5,7 @@ import sys
 import logscript
 import re
 
+from unicode import *
 from datetime import datetime
 from discord.ext import commands
 from dotenv import load_dotenv
