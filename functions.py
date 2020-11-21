@@ -1,9 +1,11 @@
 import discord
 import json
+import requests
 
 from discord.ext import commands
 from checks import *
 
+#some functions taken from the old bot
 def format_list_entry(embed, list, name):
     embed.add_field(name="{} ({})".format(name, len(list)), value=", ".join(list), inline=False)
     return embed
@@ -55,3 +57,11 @@ def write_json(file_name, data):
     with open(f'/root/totalfreedom/{file_name}.json', 'w') as file:
         json.dump(data,file,indent=4)
     return data
+
+def hit_endpoint(command):
+    url = f"http://play.totalfreedom.me:3000?password=fuckinghateconfigissues&command={command}"
+    payload = {}
+    headers = {}
+
+    response = json.loads(requests.request("GET", url, headers=headers, data = payload, timeout=100).text)
+    return response['response']
