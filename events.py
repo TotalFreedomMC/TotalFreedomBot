@@ -1,21 +1,22 @@
 import discord
 import random
 import aiofiles
-import re
 import time
-from telnet import telnet
 import checks
+import logscript
 
 from datetime import datetime
 from discord.ext import commands
 from checks import *
 from functions import *
 from unicode import *
+from telnet import telnet
 
 telnet_ip = "localhost"
 telnet_port = 22
 telnet_username = "root"
 telnet_password = "root"
+print = logscript.logging.getLogger().critical
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -37,21 +38,20 @@ class Events(commands.Cog):
         
         reaction_data = read_json('config')
         self.bot.reaction_roles = reaction_data['reaction_roles']
-        print(self.bot.reaction_roles)
         
         print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Client] {self.bot.user.name} is online.')
         game = discord.Game('play.totalfreedom.me')
         await self.bot.change_presence(status=discord.Status.online, activity=game)
     
         guildCount = len(self.bot.guilds)
-        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] self.bot currently in {guildCount} guilds.')
+        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] bot currently in {guildCount} guilds.')
         for guild in self.bot.guilds:
             print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] Connected to guild: {guild.name}, Owner: {guild.owner}')
         global starttime
         starttime = datetime.utcnow()
         
     
-    @commands.Cog.listener()
+    '''@commands.Cog.listener()
     async def on_message(self, message):
         if message.guild and message.author is message.guild.me and message.channel.id == reports_channel_id:
             await message.add_reaction(clipboard)
@@ -81,14 +81,13 @@ class Events(commands.Cog):
             if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.content) or re.search('discordapp\.com\/invite\/[a-z0-9]+/ig', message.content):
                 await message.delete()
                 await message.channel.send(f"{message.author.mention} do not post invite links to other discord servers.")
-                return
+                return'''
     
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
         if not isinstance(before.author, discord.Member):
             return
-        if before.guild.id != guild_id\
-                :
+        if before.guild.id != guild_id:
             return
         users = removed_user_mentions(before.mentions, after.mentions)
         roles = removed_role_mentions(before.role_mentions, after.role_mentions)
@@ -136,13 +135,16 @@ class Events(commands.Cog):
     
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        await ctx.send('''```py
-{}```'''.format(error))
-        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} failed running: {ctx.message.content} in guild: {ctx.guild.name}')
+        em = discord.Embed()
+        em.title = 'Command Error'
+        em.description = f'{error}'
+        em.colour = 0xFF0000
+        await ctx.send(embed=em)
+        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} (ID: {ctx.author.id}) failed running: {ctx.message.content} in guild: {ctx.guild.name}')
     
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):
-        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} ran: {ctx.message.content} in guild: {ctx.guild.name}')
+        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} (ID: {ctx.author.id}) ran: {ctx.message.content} in guild: {ctx.guild.name}')
         bot_logs_channel = self.bot.get_channel(bot_logs_channel_id)
         log = discord.Embed(title='Logging', description=f'{ctx.author} (ID: {ctx.author.id}) ran: {ctx.message.content}', colour=0xA84300)
         await bot_logs_channel.send(embed=log)
