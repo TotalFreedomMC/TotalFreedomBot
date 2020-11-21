@@ -3,6 +3,7 @@ import asyncio
 import telnet
 import time
 import events
+import os
 
 from datetime import datetime
 from discord.ext import commands
