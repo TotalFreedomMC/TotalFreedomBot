@@ -64,8 +64,11 @@ class Miscellaneous(commands.Cog):
                 self.bot.telnet_object.session.read_until(bytes('\r\n', 'ascii'), 2)
             next_line = self.bot.telnet_object.session.read_until(bytes('\r\n', 'ascii'), 2)
             em.description = f"Response from server: {next_line.decode('utf-8')}"
-        await ctx.send(embed=em)
+        else:
+            em.description = f'Command **{args[0]}** not found.'
+            em.colour = 0xFF0000
         
+        await ctx.send(embed=em)
     
     @is_dev()
     @commands.command()
