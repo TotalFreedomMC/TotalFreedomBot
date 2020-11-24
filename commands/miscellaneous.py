@@ -23,7 +23,7 @@ class Miscellaneous(commands.Cog):
         await self.bot.logout()
         return
     
-    @is_dev()
+    @is_tf_developer()
     @commands.command()
     async def telnetconfig(self, ctx, *args):
         em = discord.Embed()
