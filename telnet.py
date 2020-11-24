@@ -1,9 +1,8 @@
 import time
-import checks
 
 from telnetlib import Telnet
 
-class telnet():
+class telnet:
     def __init__(self, ip, port, username, password):
         self.ip = ip
         self.port = port
