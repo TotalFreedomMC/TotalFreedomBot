@@ -1,6 +1,6 @@
 import discord
 import requests
-
+import re
 from checks import *
 from discord.ext import commands
 from datetime import datetime
@@ -185,6 +185,7 @@ class ServerCommands(commands.Cog):
     @is_senior()
     async def console(self, ctx,*, command):
         'Send a command as console'
+        '''await ctx.send(f'```:[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: {ctx.author.name} issued server command: /{command}```')'''
         em = discord.Embed()
         try:
             self.bot.telnet_object.session.write(bytes(command, 'ascii') + b"\r\n")
@@ -223,34 +224,16 @@ class ServerCommands(commands.Cog):
             if json["online"] == 0:
                 em.description = "There are no online players"
             else:
-                em.description = "There are {} / {} online players".format(json["online"], json["max"])
-                owners = json["owners"]
-                if len(owners) != 0:
-                    em = format_list_entry(em, owners, "Server Owners")
-                executives = json["executives"]
-                if len(executives) != 0:
-                    em = format_list_entry(em, executives, "Executives")
-                developers = json["developers"]
-                if len(developers) != 0:
-                    em = format_list_entry(em, developers, "Developers")
-                senior_admins = json["senioradmins"]
-                if len(senior_admins) != 0:
-                    em = format_list_entry(em, senior_admins, "Senior Admins")
-                admins = json["admins"]
-                if len(admins) != 0:
-                    em = format_list_entry(em, admins, "Admins")
-                #trialadmins = json["trialadmins"]
-                #if len(trialadmins) != 0:
-                    #em = format_list_entry(em, trialmods, "Trial Mods")
-                masterbuilders = json["masterbuilders"]
-                if len(masterbuilders) != 0:
-                    em = format_list_entry(em, masterbuilders, "Master Builders")
-                operators = json["operators"]
-                if len(operators) != 0:
-                    em = format_list_entry(em, operators, "Operators")
-                imposters = json["imposters"]
-                if len(imposters) != 0:
-                    em = format_list_entry(em, imposters, "Imposters")
+                em.description = f"There are {json['online']} / {json['max']} online players"
+                ranks = list(json.keys())
+                ranks.reverse()
+                for rank in ranks:
+                    if rank not in ['max', 'online'] and json[rank]:
+                        rank = rank.split('_')
+                        for word in range(len(rank)):
+                            rank[word] = rank[word].capitalize()
+                        em = format_list_entry(em, json[rank], f'{" ".join(rank)}')
+                        
         except:
             em.description = 'Server is offline'
         await ctx.send(embed=em)
