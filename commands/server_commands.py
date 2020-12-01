@@ -226,7 +226,6 @@ class ServerCommands(commands.Cog):
             else:
                 em.description = f"There are {json['online']} / {json['max']} online players"
                 ranks = list(json.keys())
-                ranks.reverse()
                 for rank in ranks:
                     if rank not in ['max', 'online'] and json[rank]:
                         rank = rank.split('_')
