@@ -21,9 +21,11 @@ creative_designer = 771748500576141332
 master_builder = 769659653121900550
 server_chat = 769843495045169163
 
+
 class no_permission(commands.MissingPermissions):
     pass
-    
+
+
 def is_staff():
     def predicate(ctx):
         user = ctx.message.author
@@ -34,6 +36,7 @@ def is_staff():
             raise no_permission(['IS_STAFF_MEMBER'])
     return commands.check(predicate)
 
+
 def is_dev():
     def predicate(ctx):
         user = ctx.message.author
@@ -42,6 +45,7 @@ def is_dev():
         else:
             raise no_permission(['BOT_DEVELOPER'])
     return commands.check(predicate)
+
 
 def is_mod_or_has_perms(**permissions):
     def predicate(ctx):
@@ -53,6 +57,7 @@ def is_mod_or_has_perms(**permissions):
             raise no_permission(['IS_MOD_OR_HAS_PERMS'])
     return commands.check(predicate)
 
+
 def is_executive():
     def predicate(ctx):
         user = ctx.message.author
@@ -63,7 +68,7 @@ def is_executive():
             raise no_permission(['IS_EXECUTIVE'])
     return commands.check(predicate)
 
-    
+
 def is_tf_developer():
     def predicate(ctx):
         user = ctx.message.author
@@ -74,32 +79,35 @@ def is_tf_developer():
             raise no_permission(['IS_TOTALFREEDOM_DEVELOPER'])
     return commands.check(predicate)
 
+
 def is_liaison():
     def predicate(ctx):
         user = ctx.message.author
         for role in user.roles:
             if role.id == server_liaison:
-              return True
+                return True
         else:
             raise no_permission(['IS_SERVER_LIAISON'])
     return commands.check(predicate)
+
 
 def is_creative_designer():
     def predicate(ctx):
         user = ctx.message.author
         for role in user.roles:
             if role.id == creative_designer:
-              return True
+                return True
         else:
             raise no_permission(['IS_CREATIVE_DESIGNER'])
     return commands.check(predicate)
-     
+
+
 def is_senior():
     def predicate(ctx):
         user = ctx.message.author
         for role in user.roles:
             if role.id == senior_admin:
-              return True
+                return True
         else:
             raise no_permission(['IS_SENIOR_ADMIN'])
     return commands.check(predicate)
