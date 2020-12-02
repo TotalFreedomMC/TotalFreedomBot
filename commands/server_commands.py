@@ -111,8 +111,8 @@ class ServerCommands(commands.Cog):
         'mv, gtfo, kick, mute or warn from discord'
         em = discord.Embed()
         command = ''
-        for x in range(len(args)):
-            command += f'{args[x]} '
+        for arg in args:
+            command += f'{arg} '
         try:
             if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'unban', 'unmute', 'smite', 'noob', 'tban', 'tempban', 'warn', 'mv', 'kick', 'cc','say']:
                 self.bot.telnet_object.session.write(bytes(command, 'ascii') + b"\r\n")
