@@ -10,6 +10,7 @@ muted_role_id = 769659653121900546
 
 class Moderation(commands.Cog):
     def __init__(self, bot):
+        """Defines bot object and mod role id on construction"""
         self.bot = bot
         self.moderator_role_id = 769659653129896023
 
