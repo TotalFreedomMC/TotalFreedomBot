@@ -4,12 +4,13 @@ import discord
 from discord.ext import commands
 from functions import get_avatar
 
+
 class Help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.remove_command('help')
-        
-    @commands.command(aliases=['h','?'])
+
+    @commands.command(aliases=['h', '?'])
     async def help(self, ctx, page=1):
         'Displays the help command'
         em = discord.Embed()
@@ -17,12 +18,12 @@ class Help(commands.Cog):
         command_list = ''
         cog_list = [c for c in self.bot.cogs.keys()]
         page_count = math.ceil(len(cog_list) / 4)
-        
+
         page = int(page)
-        if page > page_count or page<1:
+        if page > page_count or page < 1:
             await ctx.send(f'Page number \'{page}\' not found.')
             return
-        
+
         cogs_needed = []
         for i in range(4):
             x = i + (int(page) - 1) * 4
@@ -30,7 +31,7 @@ class Help(commands.Cog):
                 cogs_needed.append(cog_list[x])
             except IndexError:
                 pass
-        
+
         for cog in cogs_needed:
             command_list = ''
             for command in self.bot.get_cog(cog).get_commands():
@@ -38,18 +39,20 @@ class Help(commands.Cog):
                 if command.hidden:
                     showcommand = False
                 if command.parent:
-                    showcommand = False  
+                    showcommand = False
                 for check in command.checks:
                     try:
                         check(ctx)
                     except:
                         showcommand = False
                 if showcommand:
-                    command_list += f'**{ctx.prefix}{command.name}** - {command.help}\n'        
+                    command_list += f'**{ctx.prefix}{command.name}** - {command.help}\n'
             if command_list:
-                em.add_field(name=cog, value=command_list, inline=False)        
-        em.set_footer(text=f'Requested by {ctx.message.author}', icon_url=get_avatar(ctx.message.author))
+                em.add_field(name=cog, value=command_list, inline=False)
+        em.set_footer(text=f'Requested by {ctx.message.author}', icon_url=get_avatar(
+            ctx.message.author))
         await ctx.send(embed=em)
+
 
 def setup(bot):
     bot.add_cog(Help(bot))

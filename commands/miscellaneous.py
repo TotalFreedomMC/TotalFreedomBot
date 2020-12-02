@@ -10,6 +10,7 @@ from discord.ext import commands
 from checks import *
 from functions import *
 
+
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -22,7 +23,7 @@ class Miscellaneous(commands.Cog):
         await ctx.send(embed=em)
         await self.bot.logout()
         return
-    
+
     @is_tf_developer()
     @commands.command()
     async def telnetconfig(self, ctx, *args):
@@ -51,25 +52,29 @@ class Miscellaneous(commands.Cog):
             else:
                 em.description = 'Configuration successful'
                 em.colour = 0x00FF00
-            
+
         elif args[0] == 'test':
             command = ''
             for x in range(1, len(args)):
                 command += f'{args[x]} '
             time_sent = str(datetime.utcnow().replace(microsecond=0))[11:]
-            
-            self.bot.telnet_object.session.write(bytes(command, 'ascii') + b"\r\n")
-            self.bot.telnet_object.session.read_until(bytes(f'{time_sent} INFO]:', 'ascii'), 2)
+
+            self.bot.telnet_object.session.write(
+                bytes(command, 'ascii') + b"\r\n")
+            self.bot.telnet_object.session.read_until(
+                bytes(f'{time_sent} INFO]:', 'ascii'), 2)
             if ctx.channel == ctx.guild.get_channel(server_chat):
-                self.bot.telnet_object.session.read_until(bytes('\r\n', 'ascii'), 2)
-            next_line = self.bot.telnet_object.session.read_until(bytes('\r\n', 'ascii'), 2)
+                self.bot.telnet_object.session.read_until(
+                    bytes('\r\n', 'ascii'), 2)
+            next_line = self.bot.telnet_object.session.read_until(
+                bytes('\r\n', 'ascii'), 2)
             em.description = f"Response from server: {next_line.decode('utf-8')}"
         else:
             em.description = f'Command **{args[0]}** not found.'
             em.colour = 0xFF0000
-        
+
         await ctx.send(embed=em)
-    
+
     @is_dev()
     @commands.command()
     async def debug(self, ctx, *, cmd):
@@ -83,6 +88,7 @@ class Miscellaneous(commands.Cog):
         except Exception as e:
             await ctx.send(f'''```py
 {type(e).__name__}: {e}```''')
+
 
 def setup(bot):
     bot.add_cog(Miscellaneous(bot))
