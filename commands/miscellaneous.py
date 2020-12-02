@@ -1,6 +1,5 @@
 import discord
 import events
-import ast
 
 from datetime import datetime
 from discord.ext import commands
@@ -77,7 +76,7 @@ class Miscellaneous(commands.Cog):
     async def debug(self, ctx, *, cmd):
         'Executes a line of code'
         try:
-            result = ast.literal_eval(cmd)
+            result = eval(cmd)
             if asyncio.iscoroutine(result):
                 result = await result
             await ctx.send(f'''```py
