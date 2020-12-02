@@ -17,6 +17,7 @@ print = logscript.logging.getLogger().critical
 
 class Events(commands.Cog):
     def __init__(self, bot):
+        """Defines self.bot as the bot object on construction"""
         self.bot = bot
 
     @commands.Cog.listener()
