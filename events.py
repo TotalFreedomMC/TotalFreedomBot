@@ -1,8 +1,4 @@
 import discord
-import random
-import aiofiles
-import time
-import checks
 import logscript
 
 from datetime import datetime
@@ -49,40 +45,8 @@ class Events(commands.Cog):
         print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] bot currently in {guildCount} guilds.')
         for guild in self.bot.guilds:
             print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] Connected to guild: {guild.name}, Owner: {guild.owner}')
-        starttime = datetime.utcnow()
         global starttime
-
-    '''@commands.Cog.listener()
-    async def on_message(self, message):
-        if message.guild and message.author is message.guild.me and message.channel.id == reports_channel_id:
-            await message.add_reaction(clipboard)
-        if message.type == discord.MessageType.new_member:
-            if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.author.name.lower()) or re.search('discordapp\.com\/invite\/[a-z0-9]+/ig', message.author.name.lower()):
-                await message.author.ban(reason="Name is an invite link.")
-                await message.delete()
-        bypass_roles = [discord_admin, discord_mod]
-        bypass = False
-        if message.author != self.bot.user:
-            for role in message.author.roles:
-                if role.id in bypass_roles:
-                    bypass = True
-        else:
-            if 'Server has started' in message.content: # Telnet reconnect script
-                try:
-                    self.bot.telnet_object.connect()
-                except Exception as e:
-                    print(f'Failed to reconnect telnet: {e}')
-                    time.sleep(5)
-                    try:
-                        self.bot.telnet_object.connect()
-                    except Exception as fuckup:
-                        print(f'Second attempt failed to reconnect telnet: {fuckup}')
-
-        if not bypass:
-            if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.content) or re.search('discordapp\.com\/invite\/[a-z0-9]+/ig', message.content):
-                await message.delete()
-                await message.channel.send(f"{message.author.mention} do not post invite links to other discord servers.")
-                return'''
+        starttime = datetime.utcnow()
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
