@@ -5,20 +5,10 @@ import requests
 from discord.ext import commands
 from checks import *
 
-#some functions taken from the old bot
 def format_list_entry(embed, list, name):
     embed.add_field(name="{} ({})".format(name, len(list)), value=", ".join(list), inline=False)
     return embed
-
-def get_avatar(user, animate=True):
-    if user.avatar_url:
-        avatar = str(user.avatar_url).replace(".webp", ".png")
-    else:
-        avatar = str(user.default_avatar_url)
-    if not animate:
-        avatar = avatar.replace(".gif", ".png")
-    return avatar
-
+  
 def did_mention_other_user(users, author):
     for user in users:
         if user is not author:
@@ -59,7 +49,7 @@ def write_json(file_name, data):
     return data
 
 def hit_endpoint(command):
-    url = [CENOSRED_URL]
+    url = [CENSORED_URL]
     payload = {}
     headers = {}
 
