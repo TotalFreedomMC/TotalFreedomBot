@@ -1,5 +1,3 @@
-import discord
-
 from discord.ext import commands
 
 server_liaison = 769659653096472634
@@ -83,7 +81,7 @@ def is_liaison():
             if role.id == server_liaison:
               return True
         else:
-            raise no_permission(['IS_SERVER_LIAISON'])  
+            raise no_permission(['IS_SERVER_LIAISON'])
     return commands.check(predicate)
 
 def is_creative_designer():
@@ -93,7 +91,7 @@ def is_creative_designer():
             if role.id == creative_designer:
               return True
         else:
-            raise no_permission(['IS_CREATIVE_DESIGNER'])  
+            raise no_permission(['IS_CREATIVE_DESIGNER'])
     return commands.check(predicate)
      
 def is_senior():
