@@ -1,12 +1,11 @@
 import discord
 import requests
-import re
+
 from checks import *
 from discord.ext import commands
 from datetime import datetime
 from functions import *
 from unicode import *
-from telnetlib import Telnet
 
 class ServerCommands(commands.Cog):
     def __init__(self, bot):
@@ -205,7 +204,7 @@ class ServerCommands(commands.Cog):
         'Gets the current status of the Server'
         em = discord.Embed()
         try: 
-            json = requests.get("http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
+            requests.get("http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
         except:
             em.description = 'Server is offline'
             em.colour = 0xFF0000
