@@ -13,7 +13,7 @@ from functions import *
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+
     @is_dev()
     @commands.command()
     async def killbot(self, ctx):
