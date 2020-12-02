@@ -1,7 +1,6 @@
 import discord
 import os
 import time
-import sys
 import logscript
 import re
 
