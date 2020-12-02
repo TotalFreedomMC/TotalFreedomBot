@@ -1,14 +1,12 @@
-import discord
 import json
 import requests
 
-from discord.ext import commands
 from checks import *
 
 
-def format_list_entry(embed, list, name):
-    embed.add_field(name="{} ({})".format(name, len(list)),
-                    value=", ".join(list), inline=False)
+def format_list_entry(embed, l, name):
+    embed.add_field(name="{} ({})".format(name, len(l)),
+                    value=", ".join(l), inline=False)
     return embed
 
 
