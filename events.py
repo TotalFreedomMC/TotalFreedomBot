@@ -29,7 +29,7 @@ class Events(commands.Cog):
         telnet_port = config['TELNET_PORT']
         telnet_username = config['TELNET_USERNAME']
         telnet_password = config['TELNET_PASSWORD']
-        
+
         self.bot.reaction_roles = []
         self.bot.telnet_object = telnet(telnet_ip, telnet_port, telnet_username, telnet_password)
         self.bot.telnet_object.connect()
@@ -47,9 +47,8 @@ class Events(commands.Cog):
         print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] bot currently in {guildCount} guilds.')
         for guild in self.bot.guilds:
             print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] Connected to guild: {guild.name}, Owner: {guild.owner}')
-        global starttime
         starttime = datetime.utcnow()
-        
+        global starttime
     
     '''@commands.Cog.listener()
     async def on_message(self, message):
