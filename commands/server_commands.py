@@ -187,7 +187,6 @@ class ServerCommands(commands.Cog):
     @is_senior()
     async def console(self, ctx, *, command):
         'Send a command as console'
-        '''await ctx.send(f'```:[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: {ctx.author.name} issued server command: /{command}```')'''
         em = discord.Embed()
         try:
             self.bot.telnet_object.session.write(
