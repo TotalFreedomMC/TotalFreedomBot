@@ -26,7 +26,6 @@ extensions = [
     "commands.server_commands",
     "commands.help",
     "commands.miscellaneous",
-    "commands.music",
     "events"
 ]
 
