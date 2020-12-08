@@ -56,10 +56,20 @@ def write_json(file_name, data):
 
 
 def hit_endpoint(command):
-    url = [CENSORED_URL]
+    url = f"http://play.totalfreedom.me:3000?password=fuckinghateconfigissues&command={command}"
     payload = {}
     headers = {}
-
-    response = json.loads(requests.request(
-        "GET", url, headers=headers, data=payload, timeout=100).text)
+    try:
+        response = json.loads(requests.request(
+            "GET", url, headers=headers, data=payload, timeout=100).text)
+    except:
+        response = 'Connection Error.'
     return response['response']
+
+def get_server_status():
+    try:
+        requests.get("http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
+    except:
+        return False
+    else:
+        return True
