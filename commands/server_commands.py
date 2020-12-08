@@ -277,7 +277,7 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_staff()
     async def archivereports(self, ctx):
-        ."""Archive all in-game reports older than 24 hours."""
+        """Archive all in-game reports older than 24 hours."""
         count = 0
         reports_channel = self.bot.get_channel(reports_channel_id)
         archived_reports_channel = self.bot.get_channel(
