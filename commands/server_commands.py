@@ -6,7 +6,7 @@ from checks import *
 from discord.ext import commands
 from datetime import datetime
 from functions import *
-from unicode import *
+from unicode import clipboard
 
 
 class ServerCommands(commands.Cog):
