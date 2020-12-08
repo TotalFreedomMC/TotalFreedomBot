@@ -45,8 +45,6 @@ class Events(commands.Cog):
         print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] bot currently in {guildCount} guilds.')
         for guild in self.bot.guilds:
             print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] Connected to guild: {guild.name}, Owner: {guild.owner}')
-        global starttime
-        starttime = datetime.utcnow()
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
