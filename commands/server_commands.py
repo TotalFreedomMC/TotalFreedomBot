@@ -205,7 +205,7 @@ class ServerCommands(commands.Cog):
 
     @commands.command(aliases=['status'])
     async def state(self, ctx):
-        ."""Gets the current status of the Server."""
+        """Gets the current status of the Server."""
         em = discord.Embed()
         if get_server_status():
             em.description = 'Server is online'
