@@ -1,5 +1,6 @@
 import discord
 import requests
+import re
 
 from checks import *
 from discord.ext import commands
@@ -11,7 +12,16 @@ from unicode import *
 class ServerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+    
+    def get_server_status(self):
+        try:
+            requests.get(
+                "http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
+        except:
+            return False
+        else:
+            return True
+            
     @commands.command()
     @is_liaison()
     async def eventhost(self, ctx, user: discord.Member):
@@ -206,18 +216,15 @@ class ServerCommands(commands.Cog):
     async def state(self, ctx):
         'Gets the current status of the Server'
         em = discord.Embed()
-        try:
-            requests.get(
-                "http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
-        except:
+        if self.get_server_status():
+            em.description = 'Server is online'
+            em.colour = 0x00FF00            
+        else:
             em.description = 'Server is offline'
             em.colour = 0xFF0000
-        else:
-            em.description = 'Server is online'
-            em.colour = 0x00FF00
         await ctx.send(embed=em)
 
-    @commands.command(name='list')
+    @commands.command(name='list', aliases=['l','who','lsit'])
     async def online(self, ctx):
         'Gives a list of online players.'
         em = discord.Embed()
@@ -229,14 +236,42 @@ class ServerCommands(commands.Cog):
                 em.description = "There are no online players"
             else:
                 em.description = f"There are {json['online']} / {json['max']} online players"
-                ranks = list(json.keys())
+                
+                owners = json["owners"]
+                if len(owners) != 0:
+                    em = format_list_entry(em, owners, "Server Owners")
+                executives = json["executives"]
+                if len(executives) != 0:
+                    em = format_list_entry(em, executives, "Executives")
+                developers = json["developers"]
+                if len(developers) != 0:
+                    em = format_list_entry(em, developers, "Developers")
+                senior_admins = json["senioradmins"]
+                if len(senior_admins) != 0:
+                    em = format_list_entry(em, senior_admins, "Senior Admins")
+                admins = json["admins"]
+                if len(admins) != 0:
+                    em = format_list_entry(em, admins, "Admins")
+                #trialadmins = json["trialadmins"]
+                #if len(trialadmins) != 0:
+                    #em = format_list_entry(em, trialmods, "Trial Mods")
+                masterbuilders = json["masterbuilders"]
+                if len(masterbuilders) != 0:
+                    em = format_list_entry(em, masterbuilders, "Master Builders")
+                operators = json["operators"]
+                if len(operators) != 0:
+                    em = format_list_entry(em, operators, "Operators")
+                imposters = json["imposters"]
+                if len(imposters) != 0:
+                    em = format_list_entry(em, imposters, "Imposters")
+                '''ranks = list(json.keys())
                 for rank in ranks:
                     if rank not in ['max', 'online'] and json[rank]:
                         rank = rank.split('_')
                         for word in range(len(rank)):
                             rank[word] = rank[word].capitalize()
                         em = format_list_entry(
-                            em, json[rank], f'{" ".join(rank)}')
+                            em, json[rank], f'{" ".join(rank)}')'''
 
         except:
             em.description = 'Server is offline'
@@ -269,7 +304,57 @@ class ServerCommands(commands.Cog):
                 await archived_reports_channel.send("Message archived because it is older than 24 hours", embed=embed)
                 count += 1
         await ctx.send("Archived **{}** reports that are older than 24 hours".format(count))
-
+    
+    @commands.command(aliases=['lag', 'gc'])
+    async def tps(self, ctx):
+        """Lag information regarding the server"""
+        em = discord.Embed()
+        em.title = 'Server lag information'
+        if self.get_server_status():
+            self.bot.telnet_object.session.write(
+                        bytes('lag', 'ascii') + b"\r\n")
+            self.bot.telnet_object.session.read_until(
+                    bytes(f'Uptime:', 'ascii'), 2)
+            server_uptime = self.bot.telnet_object.session.read_until(
+                    bytes(f'Current TPS =', 'ascii'), 2).decode('utf-8')
+            server_tps = self.bot.telnet_object.session.read_until(
+                    bytes(f'Maximum memory: ', 'ascii'), 2).decode('utf-8')
+            maximum_memory = self.bot.telnet_object.session.read_until(
+                    bytes(f'Allocated memory:', 'ascii'), 2).decode('utf-8')
+            allocated_memory = self.bot.telnet_object.session.read_until(
+                    bytes(f'Free memory:', 'ascii'), 2).decode('utf-8')
+            free_memory = self.bot.telnet_object.session.read_until(
+                    bytes(f'World "world":', 'ascii'), 2).decode('utf-8')
+            
+            server_uptime = server_uptime.strip(':Current TPS =')
+            server_tps = server_tps.strip(':Maximum memory:')
+            maximum_memory = maximum_memory.strip(':Allocated memory:')
+            allocated_memory = allocated_memory.strip(':Free memory:')
+            free_memory = free_memory.strip(':World "world":')
+            
+            time_sent = str(datetime.utcnow().replace(microsecond=0))[11:]
+            
+            print(f'TPS: {server_tps}, UPTIME: {server_uptime}')
+            
+            try:
+                server_uptime = re.match('[0-9]?[0-9] minutes [0-6]?[0-9] seconds', server_uptime)[0]
+                server_tps = re.match('[0-2][0-9].?[0-9]?[0-9]?', server_tps)[0]
+                maximum_memory = re.match('[0-9],?[0-9][0-9][0-9]? MB', maximum_memory)[0]
+                allocated_memory = re.match('[0-9],?[0-9][0-9][0-9]? MB', allocated_memory)[0]
+                free_memory = re.match('[0-9],?[0-9][0-9][0-9]? MB', free_memory)[0]
+            except Exception as e:
+                em.description = f'Something went wrong: {e}'
+                em.colour = 0xFF0000
+            else:
+                em.add_field(name='TPS', value = server_tps, inline=False)
+                em.add_field(name='Uptime', value = server_uptime, inline=False)
+                em.add_field(name='Maximum Memory', value = maximum_memory, inline=False)
+                em.add_field(name='Allocated Memory', value = allocated_memory, inline=False)
+                em.add_field(name='Free Memory', value = free_memory, inline=False)
+        else:
+            em.description = 'Server is offline'
+        await ctx.send(embed=em)
+        
     @commands.command()
     @is_mod_or_has_perms()
     async def fixreports(self, ctx):
