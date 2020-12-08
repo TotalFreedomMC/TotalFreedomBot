@@ -12,11 +12,11 @@ from unicode import *
 class ServerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-            
+
     @commands.command()
     @is_liaison()
     async def eventhost(self, ctx, user: discord.Member):
-        'Add or remove event host role - liaison only'
+        """Add or remove event host role - liaison only"""
         eventhostrole = ctx.guild.get_role(event_host)
         if eventhostrole in user.roles:
             await user.remove_roles(eventhostrole)
@@ -28,7 +28,7 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_creative_designer()
     async def masterbuilder(self, ctx, user: discord.Member):
-        'Add or remove master builder role - ECD only'
+        """Add or remove master builder role - ECD only"""
         master_builder_role = ctx.guild.get_role(master_builder)
         if master_builder_role in user.roles:
             await user.remove_roles(master_builder_role)
@@ -40,7 +40,7 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_staff()
     async def serverban(self, ctx, user: discord.Member):
-        'Add or remove server banned role'
+        """Add or remove server banned role"""
         serverbannedrole = ctx.guild.get_role(server_banned)
         if serverbannedrole in user.roles:
             await user.remove_roles(serverbannedrole)
@@ -52,7 +52,7 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_staff()
     async def start(self, ctx):
-        'Starts the server'
+        """Starts the server"""
         em = discord.Embed()
         try:
             attempt = hit_endpoint('start')
@@ -76,7 +76,7 @@ class ServerCommands(commands.Cog):
 
     @commands.command()
     async def uptime(self, ctx):
-        "Returns the uptime of the VPS"
+        """Returns the uptime of the VPS"""
         em = discord.Embed()
         em.title = 'VPS Uptime Information'
         em.description = hit_endpoint('uptime')
@@ -85,7 +85,7 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_staff()
     async def stop(self, ctx):
-        'Stops the server'
+        """Stops the server"""
         em = discord.Embed()
         try:
             attempt = hit_endpoint('stop')
@@ -110,7 +110,7 @@ class ServerCommands(commands.Cog):
     @commands.command(aliases=['adminconsole', 'ac'])
     @is_staff()
     async def telnet(self, ctx, *args):
-        'mv, gtfo, kick, mute or warn from discord'
+        """mv, gtfo, kick, mute or warn from discord"""
         em = discord.Embed()
         command = ''
         for arg in args:
@@ -141,7 +141,7 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_senior()
     async def kill(self, ctx):
-        'Kills the server'
+        """Kills the server"""
         em = discord.Embed()
         try:
             attempt = hit_endpoint('kill')
@@ -167,7 +167,7 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_staff()
     async def restart(self, ctx):
-        'Restarts the server'
+        """Restarts the server"""
         em = discord.Embed()
         try:
             self.bot.telnet_object.session.write(
@@ -187,7 +187,7 @@ class ServerCommands(commands.Cog):
     @commands.command()
     @is_senior()
     async def console(self, ctx, *, command):
-        'Send a command as console'
+        """Send a command as console"""
         em = discord.Embed()
         try:
             self.bot.telnet_object.session.write(
@@ -205,7 +205,7 @@ class ServerCommands(commands.Cog):
 
     @commands.command(aliases=['status'])
     async def state(self, ctx):
-        'Gets the current status of the Server'
+        """Gets the current status of the Server"""
         em = discord.Embed()
         if get_server_status():
             em.description = 'Server is online'
@@ -217,7 +217,7 @@ class ServerCommands(commands.Cog):
 
     @commands.command(name='list', aliases=['l','who','lsit'])
     async def online(self, ctx):
-        'Gives a list of online players.'
+        """Gives a list of online players."""
         em = discord.Embed()
         em.title = "Player List"
         try:
@@ -270,7 +270,7 @@ class ServerCommands(commands.Cog):
 
     @commands.command()
     async def ip(self, ctx):
-        'Returns the server IP'
+        """Returns the server IP"""
         await ctx.send(embed=discord.Embed(description='play.totalfreedom.me', title='Server IP'))
         # pass #discordSRV responds already.
 
