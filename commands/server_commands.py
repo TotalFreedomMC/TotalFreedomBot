@@ -12,15 +12,6 @@ from unicode import *
 class ServerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
-    def get_server_status(self):
-        try:
-            requests.get(
-                "http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
-        except:
-            return False
-        else:
-            return True
             
     @commands.command()
     @is_liaison()
@@ -216,9 +207,9 @@ class ServerCommands(commands.Cog):
     async def state(self, ctx):
         'Gets the current status of the Server'
         em = discord.Embed()
-        if self.get_server_status():
+        if get_server_status():
             em.description = 'Server is online'
-            em.colour = 0x00FF00            
+            em.colour = 0x00FF00
         else:
             em.description = 'Server is offline'
             em.colour = 0xFF0000
@@ -310,29 +301,27 @@ class ServerCommands(commands.Cog):
         """Lag information regarding the server"""
         em = discord.Embed()
         em.title = 'Server lag information'
-        if self.get_server_status():
+        if get_server_status():
             self.bot.telnet_object.session.write(
                         bytes('lag', 'ascii') + b"\r\n")
             self.bot.telnet_object.session.read_until(
-                    bytes(f'Uptime:', 'ascii'), 2)
+                    bytes('Uptime:', 'ascii'), 2)
             server_uptime = self.bot.telnet_object.session.read_until(
-                    bytes(f'Current TPS =', 'ascii'), 2).decode('utf-8')
+                    bytes('Current TPS =', 'ascii'), 2).decode('utf-8')
             server_tps = self.bot.telnet_object.session.read_until(
-                    bytes(f'Maximum memory: ', 'ascii'), 2).decode('utf-8')
+                    bytes('Maximum memory: ', 'ascii'), 2).decode('utf-8')
             maximum_memory = self.bot.telnet_object.session.read_until(
-                    bytes(f'Allocated memory:', 'ascii'), 2).decode('utf-8')
+                    bytes('Allocated memory:', 'ascii'), 2).decode('utf-8')
             allocated_memory = self.bot.telnet_object.session.read_until(
-                    bytes(f'Free memory:', 'ascii'), 2).decode('utf-8')
+                    bytes('Free memory:', 'ascii'), 2).decode('utf-8')
             free_memory = self.bot.telnet_object.session.read_until(
-                    bytes(f'World "world":', 'ascii'), 2).decode('utf-8')
+                    bytes('World "world":', 'ascii'), 2).decode('utf-8')
             
             server_uptime = server_uptime.strip(':Current TPS =')
             server_tps = server_tps.strip(':Maximum memory:')
             maximum_memory = maximum_memory.strip(':Allocated memory:')
             allocated_memory = allocated_memory.strip(':Free memory:')
             free_memory = free_memory.strip(':World "world":')
-            
-            time_sent = str(datetime.utcnow().replace(microsecond=0))[11:]
             
             print(f'TPS: {server_tps}, UPTIME: {server_uptime}')
             
