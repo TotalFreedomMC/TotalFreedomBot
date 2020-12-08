@@ -56,7 +56,7 @@ def write_json(file_name, data):
 
 
 def hit_endpoint(command):
-    url = f"http://play.totalfreedom.me:3000?password=fuckinghateconfigissues&command={command}"
+    url = f"http://play.totalfreedom.me:3000?password=CENSORED&command={command}"
     payload = {}
     headers = {}
     try:
