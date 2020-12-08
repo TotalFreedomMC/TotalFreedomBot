@@ -326,7 +326,7 @@ class ServerCommands(commands.Cog):
             print(f'TPS: {server_tps}, UPTIME: {server_uptime}')
             
             try:
-                server_uptime = re.match('[0-9]?[0-9] minutes [0-6]?[0-9] seconds', server_uptime)[0]
+                server_uptime = re.match('[0-9]?[0-9] minutes( [0-6]?[0-9] seconds)?', server_uptime)[0]
                 server_tps = re.match('[0-2][0-9].?[0-9]?[0-9]?', server_tps)[0]
                 maximum_memory = re.match('[0-9],?[0-9][0-9][0-9]? MB', maximum_memory)[0]
                 allocated_memory = re.match('[0-9],?[0-9][0-9][0-9]? MB', allocated_memory)[0]
