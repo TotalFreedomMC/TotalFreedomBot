@@ -124,6 +124,8 @@ class Events(commands.Cog):
             pass
         else:
             for role_id, msg_id, emoji in self.bot.reaction_roles:
+                if 'sixx' in payload.member.name.lower():
+                    return
                 if msg_id == payload.message_id and emoji == str(payload.emoji.name):
                     await payload.member.add_roles(self.bot.get_guild(payload.guild_id).get_role(role_id), reason='reaction')
             if payload.channel_id == reports_channel_id:
