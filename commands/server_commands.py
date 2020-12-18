@@ -221,51 +221,31 @@ class ServerCommands(commands.Cog):
         em = discord.Embed()
         em.title = "Player List"
         try:
-            json = requests.get(
-                "http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
+            json = requests.get("http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
             if json["online"] == 0:
                 em.description = "There are no online players"
             else:
                 em.description = f"There are {json['online']} / {json['max']} online players"
+                ranks = list(json.keys())
                 
-                owners = json["owners"]
-                if len(owners) != 0:
-                    em = format_list_entry(em, owners, "Server Owners")
-                executives = json["executives"]
-                if len(executives) != 0:
-                    em = format_list_entry(em, executives, "Executives")
-                developers = json["developers"]
-                if len(developers) != 0:
-                    em = format_list_entry(em, developers, "Developers")
-                senior_admins = json["senioradmins"]
-                if len(senior_admins) != 0:
-                    em = format_list_entry(em, senior_admins, "Senior Admins")
-                admins = json["admins"]
-                if len(admins) != 0:
-                    em = format_list_entry(em, admins, "Admins")
-                #trialadmins = json["trialadmins"]
-                #if len(trialadmins) != 0:
-                    #em = format_list_entry(em, trialmods, "Trial Mods")
-                masterbuilders = json["masterbuilders"]
-                if len(masterbuilders) != 0:
-                    em = format_list_entry(em, masterbuilders, "Master Builders")
-                operators = json["operators"]
-                if len(operators) != 0:
-                    em = format_list_entry(em, operators, "Operators")
-                imposters = json["imposters"]
-                if len(imposters) != 0:
-                    em = format_list_entry(em, imposters, "Imposters")
-                '''ranks = list(json.keys())
+                entries = []
+                
                 for rank in ranks:
                     if rank not in ['max', 'online'] and json[rank]:
-                        rank = rank.split('_')
-                        for word in range(len(rank)):
-                            rank[word] = rank[word].capitalize()
-                        em = format_list_entry(
-                            em, json[rank], f'{" ".join(rank)}')'''
-
-        except:
+                        rank_fixed = rank.split('_')
+                        for word in range(len(rank_fixed)):
+                            rank_fixed[word] = rank_fixed[word].capitalize()
+                        entries.append(format_list_entry(em, json[rank], f'{" ".join(rank_fixed)}'))
+                
+                order = ['Owners', 'Executives', 'Developers', 'Senior Admins', 'Admins', 'Master Builders', 'Operators', 'Imposters']
+                sorted = [tpl for x in order for tpl in entries if tpl.name == x]
+                
+                for x in sorted:
+                    em.add_field(name=f'{x.name} ({x.playercount})', value=x.value, inline=False)
+                
+        except Exception as e:
             em.description = 'Server is offline'
+            print(e)
         await ctx.send(embed=em)
 
     @commands.command()
