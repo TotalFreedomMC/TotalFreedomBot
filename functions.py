@@ -15,10 +15,11 @@ def format_list_entry(embed, l, name):
     l_names = [f'{l[i]}' for i in range(len(l))]
     l_names = [name.replace('_', '\_') for name in l_names]
     
-    em = embed_entry(name=name,
-                    value=", ".join(l_names),
-                    playercount = len(l)
-                    )
+    em = embed_entry(
+            name=name,
+            value=", ".join(l_names),
+            playercount = len(l)
+        )
     return em
 
 def did_mention_other_user(users, author):
