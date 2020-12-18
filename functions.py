@@ -4,10 +4,21 @@ import requests
 from checks import *
 
 
+class embed_entry:
+    def __init__(self, name, value, *, playercount):
+        self.name = name
+        self.value = value
+        if playercount:
+            self.playercount = playercount
+
 def format_list_entry(embed, l, name):
-    embed.add_field(name="{} ({})".format(name, len(l)),
-                    value=", ".join(l), inline=False)
-    return embed
+    l_names = []
+    [l_names.append(f'`{l[i]}`') for i in range(len(l))]
+    em = embed_entry(name=name,
+                    value=", ".join(l_names),
+                    playercount = len(l)
+                    )
+    return em
 
 
 def did_mention_other_user(users, author):
