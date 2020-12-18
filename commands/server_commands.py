@@ -238,7 +238,7 @@ class ServerCommands(commands.Cog):
                         entries.append(format_list_entry(em, json[rank], f'{" ".join(rank_fixed)}'))
                 
                 order = ['Owners', 'Executives', 'Developers', 'Senior Admins', 'Admins', 'Master Builders', 'Operators', 'Imposters']
-                sorted = [tpl for x in order for tpl in entries if tpl.name == x]
+                sorted = [entry for rank in order for entry in entries if entry.name == rank]
                 
                 for x in sorted:
                     em.add_field(name=f'{x.name} ({x.playercount})', value=x.value, inline=False)
