@@ -44,6 +44,12 @@ def removed_role_mentions(old, new):
             roles.append(role)
     return roles
 
+def get_prefix(bot, message):
+    #prefixes = ['TF!', 'Tf!', 'tF!', 'tf!']
+    prefix = os.getenv('prefix')
+    prefixes = map(''.join, itertools.product(*((letter.upper(), letter.lower()) for letter in prefix)))
+    return commands.when_mentioned_or(*prefixes)(bot, message)
+
 
 def get_avatar(user, animate=True):
     if user.avatar_url:
