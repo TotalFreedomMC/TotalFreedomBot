@@ -17,8 +17,7 @@ load_dotenv()
 botToken = os.getenv('botToken')
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix=os.getenv('prefix'),
-                   description='TotalFreedom bot help command', intents=intents)
+bot = commands.Bot(command_prefix=get_prefix, case_insensitive=True, description='TotalFreedom bot help command', intents=intents)
 
 
 extensions = [
@@ -42,6 +41,9 @@ if __name__ == '__main__':
 
 @bot.event
 async def on_message(message):
+    if isinstance(message.channel, discord.channel.DMChannel):
+        print(f'{message.author} DM: {message.content}')
+        return
     if message.guild and message.author is message.guild.me and message.channel.id == reports_channel_id:
         await message.add_reaction(clipboard)
     if message.type == discord.MessageType.new_member:
@@ -71,7 +73,6 @@ async def on_message(message):
             await message.delete()
             await message.channel.send(f"{message.author.mention} do not post invite links to other discord servers.")
 
-    if message.content.lower().startswith(os.getenv('prefix')):
-        await bot.process_commands(message)
+    await bot.process_commands(message)
 
 bot.run(botToken)
