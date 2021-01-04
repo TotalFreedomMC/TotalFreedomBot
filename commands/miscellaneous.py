@@ -1,11 +1,9 @@
-import discord
-import events
 import asyncio
-import ast
-
 from datetime import datetime
-from discord.ext import commands
+
+import discord
 from checks import *
+from discord.ext import commands
 from functions import *
 
 
