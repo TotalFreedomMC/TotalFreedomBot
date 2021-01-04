@@ -1,8 +1,10 @@
 import json
 import requests
+import os
+import itertools
 
+from discord.ext import commands
 from checks import *
-
 
 class embed_entry:
     def __init__(self, name, value, *, playercount):
@@ -10,7 +12,7 @@ class embed_entry:
         self.value = value
         if playercount:
             self.playercount = playercount
-
+        
 def format_list_entry(embed, l, name):
     l_names = [f'{l[i]}' for i in range(len(l))]
     l_names = [name.replace('_', '\_') for name in l_names]
@@ -21,6 +23,14 @@ def format_list_entry(embed, l, name):
             playercount = len(l)
         )
     return em
+
+
+def get_prefix(client, message):
+    #prefixes = ['TF!', 'Tf!', 'tF!', 'tf!']
+    prefix = os.getenv('prefix')
+    prefixes = map(''.join, itertools.product(*((letter.upper(), letter.lower()) for letter in prefix)))
+    return commands.when_mentioned_or(*prefixes)(client, message)
+
 
 def did_mention_other_user(users, author):
     for user in users:
@@ -43,12 +53,6 @@ def removed_role_mentions(old, new):
         if role not in new:
             roles.append(role)
     return roles
-
-def get_prefix(bot, message):
-    #prefixes = ['TF!', 'Tf!', 'tF!', 'tf!']
-    prefix = os.getenv('prefix')
-    prefixes = map(''.join, itertools.product(*((letter.upper(), letter.lower()) for letter in prefix)))
-    return commands.when_mentioned_or(*prefixes)(bot, message)
 
 
 def get_avatar(user, animate=True):
@@ -73,20 +77,34 @@ def write_json(file_name, data):
     return data
 
 
-def hit_endpoint(command):
-    url = f"http://play.totalfreedom.me:3000?password=CENSORED&command={command}"
+def hit_endpoint(command, server=1):
+    config_file = read_json('config')
+    if server == 1:
+        ip = config_file['SERVER_IP']
+        pw = config_file['ENDPOINTS_PW']
+    else:
+        ip = config_file['SERVER_IP_2']
+        pw = config_file['ENDPOINTS_PW_2']
+    port = config_file['ENDPOINTS_PORT']
+    url = f"http://{ip}:{port}?password={pw}&command={command}"
     payload = {}
     headers = {}
     try:
         response = json.loads(requests.request(
-            "GET", url, headers=headers, data=payload, timeout=100).text)
+            "GET", url, headers=headers, data=payload, timeout=5).text)
     except:
-        response = 'Connection Error.'
+        response = {'response': 'Connection Error.'}
     return response['response']
-
-def get_server_status():
+    
+def get_server_status(server=1):
+    config_file = read_json('config')
+    if server == 1:
+        ip = config_file['SERVER_IP']
+    else:
+        ip = config_file['SERVER_IP_2']
+    port = config_file['PLAYERLIST_PORT']
     try:
-        requests.get("http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
+        requests.get(f"http://{ip}:{port}/list?json=true", timeout=5).json()
     except:
         return False
     else:
