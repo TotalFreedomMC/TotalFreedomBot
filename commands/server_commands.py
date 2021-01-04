@@ -13,19 +13,19 @@ from unicode import clipboard
 class ServerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        
+
     def write_telnet_session(self, server, to_write):
         if server == 1:
             return self.bot.telnet_object.session.write(to_write)
         else:
             return self.bot.telnet_object_2.session.write(to_write)
-    
+
     def read_until_telnet(self, to_read, server):
         if server == 1:
             return self.bot.telnet_object.session.read_until(to_read).decode('utf-8')
         else:
             return self.bot.telnet_object_2.session.read_until(to_read).decode('utf-8')
-            
+
     @commands.command()
     @is_liaison()
     async def eventhost(self, ctx, user: discord.Member):
@@ -138,15 +138,16 @@ class ServerCommands(commands.Cog):
         for arg in args:
             command += f'{arg} '
         try:
-            if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'unban', 'unmute', 'smite', 'noob', 'tban', 'tempban', 'warn', 'mv', 'kick', 'cc', 'say']:
-                self.write_telnet_session(server, 
-                    bytes(command, 'ascii') + b"\r\n")
+            if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'unban', 'unmute', 'smite', 'noob', 'tban', 'tempban', 'warn',
+                           'mv', 'kick', 'cc', 'say']:
+                self.write_telnet_session(server,
+                                          bytes(command, 'ascii') + b"\r\n")
             elif args[0] == 'saconfig':
                 if args[1] not in ['add', 'remove']:
                     raise no_permission(['IS_SENIOR_ADMIN'])
                 else:
-                    self.write_telnet_session(server, 
-                        bytes(command, 'ascii') + b"\r\n")
+                    self.write_telnet_session(server,
+                                              bytes(command, 'ascii') + b"\r\n")
             else:
                 raise no_permission(['IS_SENIOR_ADMIN'])
         except Exception as e:
@@ -198,8 +199,8 @@ class ServerCommands(commands.Cog):
         if ctx.channel.id == 793632795598913546:
             server = 2
         try:
-            self.write_telnet_session(server, 
-                bytes('restart', 'ascii') + b"\r\n")
+            self.write_telnet_session(server,
+                                      bytes('restart', 'ascii') + b"\r\n")
         except Exception as e:
             em.title = 'Command error'
             em.colour = 0xFF0000
@@ -221,8 +222,8 @@ class ServerCommands(commands.Cog):
         if ctx.channel.id == 793632795598913546:
             server = 2
         try:
-            self.write_telnet_session(server, 
-                bytes(command, 'ascii') + b"\r\n")
+            self.write_telnet_session(server,
+                                      bytes(command, 'ascii') + b"\r\n")
         except Exception as e:
             em.title = 'Command error'
             em.colour = 0xFF0000
@@ -249,7 +250,7 @@ class ServerCommands(commands.Cog):
             em.colour = 0xFF0000
         await ctx.send(embed=em)
 
-    @commands.command(name='list', aliases=['l','who','lsit'])
+    @commands.command(name='list', aliases=['l', 'who', 'lsit'])
     async def online(self, ctx):
         """Gives a list of online players."""
         em = discord.Embed()
@@ -267,22 +268,23 @@ class ServerCommands(commands.Cog):
             else:
                 em.description = f"There are {json['online']} / {json['max']} online players"
                 ranks = list(json.keys())
-                
+
                 entries = []
-                
+
                 for rank in ranks:
                     if rank not in ['max', 'online'] and json[rank]:
                         rank_fixed = rank.split('_')
                         for word in range(len(rank_fixed)):
                             rank_fixed[word] = rank_fixed[word].capitalize()
                         entries.append(format_list_entry(em, json[rank], f'{" ".join(rank_fixed)}'))
-                
-                order = ['Owners', 'Executives', 'Developers', 'Senior Admins', 'Admins', 'Master Builders', 'Operators', 'Imposters']
+
+                order = ['Owners', 'Executives', 'Developers', 'Senior Admins', 'Admins', 'Master Builders',
+                         'Operators', 'Imposters']
                 sorted = [entry for rank in order for entry in entries if entry.name == rank]
-                
+
                 for x in sorted:
                     em.add_field(name=f'{x.name} ({x.playercount})', value=x.value, inline=False)
-                
+
         except Exception as e:
             em.description = 'Server is offline'
             print(e)
@@ -315,7 +317,7 @@ class ServerCommands(commands.Cog):
                 await archived_reports_channel.send("Message archived because it is older than 24 hours", embed=embed)
                 count += 1
         await ctx.send("Archived **{}** reports that are older than 24 hours".format(count))
-    
+
     @commands.command(aliases=['lag', 'gc'])
     async def tps(self, ctx):
         """Lag information regarding the server."""
@@ -326,30 +328,32 @@ class ServerCommands(commands.Cog):
             server = 2
         if get_server_status(server):
             self.write_telnet_session(server,
-                        bytes('lag', 'ascii') + b"\r\n")
+                                      bytes('lag', 'ascii') + b"\r\n")
             self.read_until_telnet(
-                    bytes('Uptime:', 'ascii'), server)
+                bytes('Uptime:', 'ascii'), server)
             server_uptime = self.read_until_telnet(
-                    bytes('Current TPS =', 'ascii'), server)
+                bytes('Current TPS =', 'ascii'), server)
             server_tps = self.read_until_telnet(
-                    bytes('Maximum memory: ', 'ascii'), server)
+                bytes('Maximum memory: ', 'ascii'), server)
             maximum_memory = self.read_until_telnet(
-                    bytes('Allocated memory:', 'ascii'), server)
+                bytes('Allocated memory:', 'ascii'), server)
             allocated_memory = self.read_until_telnet(
-                    bytes('Free memory:', 'ascii'), server)
+                bytes('Free memory:', 'ascii'), server)
             free_memory = self.read_until_telnet(
-                    bytes('World "world":', 'ascii'), server)
-            
+                bytes('World "world":', 'ascii'), server)
+
             server_uptime = server_uptime.strip(':Current TPS =')
             server_tps = server_tps.strip(':Maximum memory:')
             maximum_memory = maximum_memory.strip(':Allocated memory:')
             allocated_memory = allocated_memory.strip(':Free memory:')
             free_memory = free_memory.strip(':World "world":')
-            
-            print(f'TPS: {server_tps} UPTIME: {server_uptime} MAX MEM: {maximum_memory} ALLCTD MEM: {allocated_memory} FREE MEM: {free_memory}')
-            
+
+            print(
+                f'TPS: {server_tps} UPTIME: {server_uptime} MAX MEM: {maximum_memory} ALLCTD MEM: {allocated_memory} FREE MEM: {free_memory}')
+
             try:
-                server_uptime = re.match('([0-9]+ days? )?([0-9]+ hours )?([0-9]+ minutes )?([0-6]?[0-9] seconds)', server_uptime)[0]
+                server_uptime = \
+                re.match('([0-9]+ days? )?([0-9]+ hours )?([0-9]+ minutes )?([0-6]?[0-9] seconds)', server_uptime)[0]
                 server_tps = re.match('[0-2][0-9].?[0-9]*', server_tps)[0]
                 maximum_memory = re.match('[0-9]+,?[0-9]* MB', maximum_memory)[0]
                 allocated_memory = re.match('[0-9]+,?[0-9]* MB', allocated_memory)[0]
@@ -358,15 +362,15 @@ class ServerCommands(commands.Cog):
                 em.description = f'Something went wrong: {e}'
                 em.colour = 0xFF0000
             else:
-                em.add_field(name='TPS', value = server_tps, inline=False)
-                em.add_field(name='Uptime', value = server_uptime, inline=False)
-                em.add_field(name='Maximum Memory', value = maximum_memory, inline=False)
-                em.add_field(name='Allocated Memory', value = allocated_memory, inline=False)
-                em.add_field(name='Free Memory', value = free_memory, inline=False)
+                em.add_field(name='TPS', value=server_tps, inline=False)
+                em.add_field(name='Uptime', value=server_uptime, inline=False)
+                em.add_field(name='Maximum Memory', value=maximum_memory, inline=False)
+                em.add_field(name='Allocated Memory', value=allocated_memory, inline=False)
+                em.add_field(name='Free Memory', value=free_memory, inline=False)
         else:
             em.description = 'Server is offline'
         await ctx.send(embed=em)
-        
+
     @commands.command()
     @is_mod_or_has_perms()
     async def fixreports(self, ctx):
