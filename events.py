@@ -8,10 +8,6 @@ from functions import *
 from unicode import confirm, clipboard, cancel
 from telnet import telnet
 
-telnet_ip = "localhost"
-telnet_port = 22
-telnet_username = "root"
-telnet_password = "root"
 print = logscript.logging.getLogger().critical
 
 
@@ -22,16 +18,23 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         config = read_json('config')
-        telnet_ip = config['TELNET_IP']
+        telnet_ip = config['SERVER_IP']
         telnet_port = config['TELNET_PORT']
         telnet_username = config['TELNET_USERNAME']
         telnet_password = config['TELNET_PASSWORD']
-
+        
+        telnet_ip_2 = config['SERVER_IP_2']
+        
         self.bot.reaction_roles = []
         self.bot.telnet_object = telnet(
             telnet_ip, telnet_port, telnet_username, telnet_password)
         self.bot.telnet_object.connect()
-
+        
+        self.bot.telnet_object_2 = telnet(
+            telnet_ip_2, telnet_port, telnet_username, telnet_password)
+        self.bot.telnet_object_2.connect()
+        
+        
         print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [TELNET] Bot logged into Telnet as: {self.bot.telnet_object.username}')
 
         reaction_data = read_json('config')
