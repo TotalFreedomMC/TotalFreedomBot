@@ -20,6 +20,8 @@ developer = 769659653129896017
 creative_designer = 771748500576141332
 master_builder = 769659653121900550
 server_chat = 769843495045169163
+verification_role = 769925060412309524
+server_chat_2 = 793632795598913546
 
 
 class no_permission(commands.MissingPermissions):
@@ -34,6 +36,7 @@ def is_staff():
                 return True
         else:
             raise no_permission(['IS_STAFF_MEMBER'])
+
     return commands.check(predicate)
 
 
@@ -44,6 +47,7 @@ def is_dev():
             return True
         else:
             raise no_permission(['BOT_DEVELOPER'])
+
     return commands.check(predicate)
 
 
@@ -55,6 +59,7 @@ def is_mod_or_has_perms(**permissions):
                 return True
         else:
             raise no_permission(['IS_MOD_OR_HAS_PERMS'])
+
     return commands.check(predicate)
 
 
@@ -66,6 +71,7 @@ def is_executive():
                 return True
         else:
             raise no_permission(['IS_EXECUTIVE'])
+
     return commands.check(predicate)
 
 
@@ -77,6 +83,7 @@ def is_tf_developer():
                 return True
         else:
             raise no_permission(['IS_TOTALFREEDOM_DEVELOPER'])
+
     return commands.check(predicate)
 
 
@@ -88,6 +95,7 @@ def is_liaison():
                 return True
         else:
             raise no_permission(['IS_SERVER_LIAISON'])
+
     return commands.check(predicate)
 
 
@@ -99,6 +107,7 @@ def is_creative_designer():
                 return True
         else:
             raise no_permission(['IS_CREATIVE_DESIGNER'])
+
     return commands.check(predicate)
 
 
@@ -110,4 +119,5 @@ def is_senior():
                 return True
         else:
             raise no_permission(['IS_SENIOR_ADMIN'])
+
     return commands.check(predicate)
