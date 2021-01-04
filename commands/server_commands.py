@@ -1,6 +1,7 @@
 import discord
 import requests
 import re
+import time
 
 from checks import *
 from discord.ext import commands
@@ -12,7 +13,19 @@ from unicode import clipboard
 class ServerCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        
+    def write_telnet_session(self, server, to_write):
+        if server == 1:
+            return self.bot.telnet_object.session.write(to_write)
+        else:
+            return self.bot.telnet_object_2.session.write(to_write)
+    
+    def read_until_telnet(self, to_read, server):
+        if server == 1:
+            return self.bot.telnet_object.session.read_until(to_read).decode('utf-8')
+        else:
+            return self.bot.telnet_object_2.session.read_until(to_read).decode('utf-8')
+            
     @commands.command()
     @is_liaison()
     async def eventhost(self, ctx, user: discord.Member):
@@ -54,8 +67,11 @@ class ServerCommands(commands.Cog):
     async def start(self, ctx):
         """Starts the server."""
         em = discord.Embed()
+        server = 1
+        if ctx.channel.id == 793632795598913546:
+            server = 2
         try:
-            attempt = hit_endpoint('start')
+            attempt = hit_endpoint('start', server)
         except Exception as e:
             em.title = 'Command error'
             em.colour = 0xFF0000
@@ -87,8 +103,11 @@ class ServerCommands(commands.Cog):
     async def stop(self, ctx):
         """Stops the server."""
         em = discord.Embed()
+        server = 1
+        if ctx.channel.id == 793632795598913546:
+            server = 2
         try:
-            attempt = hit_endpoint('stop')
+            attempt = hit_endpoint('stop', server)
         except Exception as e:
             em.title = 'Command error'
             em.colour = 0xFF0000
@@ -112,18 +131,21 @@ class ServerCommands(commands.Cog):
     async def telnet(self, ctx, *args):
         """mv, gtfo, kick, mute or warn from discord."""
         em = discord.Embed()
+        server = 1
+        if ctx.channel.id == 793632795598913546:
+            server = 2
         command = ''
         for arg in args:
             command += f'{arg} '
         try:
             if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'unban', 'unmute', 'smite', 'noob', 'tban', 'tempban', 'warn', 'mv', 'kick', 'cc', 'say']:
-                self.bot.telnet_object.session.write(
+                self.write_telnet_session(server, 
                     bytes(command, 'ascii') + b"\r\n")
-            elif args[0] == 'slconfig':
+            elif args[0] == 'saconfig':
                 if args[1] not in ['add', 'remove']:
                     raise no_permission(['IS_SENIOR_ADMIN'])
                 else:
-                    self.bot.telnet_object.session.write(
+                    self.write_telnet_session(server, 
                         bytes(command, 'ascii') + b"\r\n")
             else:
                 raise no_permission(['IS_SENIOR_ADMIN'])
@@ -143,8 +165,11 @@ class ServerCommands(commands.Cog):
     async def kill(self, ctx):
         """Kills the server."""
         em = discord.Embed()
+        server = 1
+        if ctx.channel.id == 793632795598913546:
+            server = 2
         try:
-            attempt = hit_endpoint('kill')
+            attempt = hit_endpoint('kill', server)
         except Exception as e:
             em.title = 'Command error'
             em.colour = 0xFF0000
@@ -169,8 +194,11 @@ class ServerCommands(commands.Cog):
     async def restart(self, ctx):
         """Restarts the server."""
         em = discord.Embed()
+        server = 1
+        if ctx.channel.id == 793632795598913546:
+            server = 2
         try:
-            self.bot.telnet_object.session.write(
+            self.write_telnet_session(server, 
                 bytes('restart', 'ascii') + b"\r\n")
         except Exception as e:
             em.title = 'Command error'
@@ -189,8 +217,11 @@ class ServerCommands(commands.Cog):
     async def console(self, ctx, *, command):
         """Send a command as console."""
         em = discord.Embed()
+        server = 1
+        if ctx.channel.id == 793632795598913546:
+            server = 2
         try:
-            self.bot.telnet_object.session.write(
+            self.write_telnet_session(server, 
                 bytes(command, 'ascii') + b"\r\n")
         except Exception as e:
             em.title = 'Command error'
@@ -207,7 +238,10 @@ class ServerCommands(commands.Cog):
     async def state(self, ctx):
         """Gets the current status of the Server."""
         em = discord.Embed()
-        if get_server_status():
+        server = 1
+        if ctx.channel.id == 793632795598913546:
+            server = 2
+        if get_server_status(server):
             em.description = 'Server is online'
             em.colour = 0x00FF00
         else:
@@ -220,8 +254,14 @@ class ServerCommands(commands.Cog):
         """Gives a list of online players."""
         em = discord.Embed()
         em.title = "Player List"
+        config_file = read_json('config')
+        if ctx.channel.id == 793632795598913546:
+            ip = config_file['SERVER_IP_2']
+        else:
+            ip = config_file['SERVER_IP']
+        port = config_file['PLAYERLIST_PORT']
         try:
-            json = requests.get("http://play.totalfreedom.me:28966/list?json=true", timeout=5).json()
+            json = requests.get(f"http://{ip}:{port}/list?json=true", timeout=5).json()
             if json["online"] == 0:
                 em.description = "There are no online players"
             else:
@@ -281,21 +321,24 @@ class ServerCommands(commands.Cog):
         """Lag information regarding the server."""
         em = discord.Embed()
         em.title = 'Server lag information'
-        if get_server_status():
-            self.bot.telnet_object.session.write(
+        server = 1
+        if ctx.channel.id == 793632795598913546:
+            server = 2
+        if get_server_status(server):
+            self.write_telnet_session(server,
                         bytes('lag', 'ascii') + b"\r\n")
-            self.bot.telnet_object.session.read_until(
-                    bytes('Uptime:', 'ascii'), 2)
-            server_uptime = self.bot.telnet_object.session.read_until(
-                    bytes('Current TPS =', 'ascii'), 2).decode('utf-8')
-            server_tps = self.bot.telnet_object.session.read_until(
-                    bytes('Maximum memory: ', 'ascii'), 2).decode('utf-8')
-            maximum_memory = self.bot.telnet_object.session.read_until(
-                    bytes('Allocated memory:', 'ascii'), 2).decode('utf-8')
-            allocated_memory = self.bot.telnet_object.session.read_until(
-                    bytes('Free memory:', 'ascii'), 2).decode('utf-8')
-            free_memory = self.bot.telnet_object.session.read_until(
-                    bytes('World "world":', 'ascii'), 2).decode('utf-8')
+            self.read_until_telnet(
+                    bytes('Uptime:', 'ascii'), server)
+            server_uptime = self.read_until_telnet(
+                    bytes('Current TPS =', 'ascii'), server)
+            server_tps = self.read_until_telnet(
+                    bytes('Maximum memory: ', 'ascii'), server)
+            maximum_memory = self.read_until_telnet(
+                    bytes('Allocated memory:', 'ascii'), server)
+            allocated_memory = self.read_until_telnet(
+                    bytes('Free memory:', 'ascii'), server)
+            free_memory = self.read_until_telnet(
+                    bytes('World "world":', 'ascii'), server)
             
             server_uptime = server_uptime.strip(':Current TPS =')
             server_tps = server_tps.strip(':Maximum memory:')
@@ -303,14 +346,14 @@ class ServerCommands(commands.Cog):
             allocated_memory = allocated_memory.strip(':Free memory:')
             free_memory = free_memory.strip(':World "world":')
             
-            print(f'TPS: {server_tps}, UPTIME: {server_uptime}')
+            print(f'TPS: {server_tps} UPTIME: {server_uptime} MAX MEM: {maximum_memory} ALLCTD MEM: {allocated_memory} FREE MEM: {free_memory}')
             
             try:
-                server_uptime = re.match('([0-9]?[0-9] hours )?([0-9]?[0-9] minutes)( [0-6]?[0-9] seconds)?', server_uptime)[0]
-                server_tps = re.match('[0-2][0-9].?[0-9]?[0-9]?', server_tps)[0]
-                maximum_memory = re.match('[0-9],?[0-9][0-9][0-9]? MB', maximum_memory)[0]
-                allocated_memory = re.match('[0-9],?[0-9][0-9][0-9]? MB', allocated_memory)[0]
-                free_memory = re.match('[0-9],?[0-9][0-9][0-9]? MB', free_memory)[0]
+                server_uptime = re.match('([0-9]+ days? )?([0-9]+ hours )?([0-9]+ minutes )?([0-6]?[0-9] seconds)', server_uptime)[0]
+                server_tps = re.match('[0-2][0-9].?[0-9]*', server_tps)[0]
+                maximum_memory = re.match('[0-9]+,?[0-9]* MB', maximum_memory)[0]
+                allocated_memory = re.match('[0-9]+,?[0-9]* MB', allocated_memory)[0]
+                free_memory = re.match('[0-9]+,?[0-9]* MB', free_memory)[0]
             except Exception as e:
                 em.description = f'Something went wrong: {e}'
                 em.colour = 0xFF0000
