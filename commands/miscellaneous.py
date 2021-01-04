@@ -1,5 +1,7 @@
 import discord
 import events
+import asyncio
+import ast
 
 from datetime import datetime
 from discord.ext import commands
@@ -28,6 +30,7 @@ class Miscellaneous(commands.Cog):
         if not args or args[0] in ['reconnect', 'connect']:
             try:
                 self.bot.telnet_object.connect()
+                self.bot.telnet_object_2.connect()
             except Exception as e:
                 em.description = f'Failed reconnection: {e}'
                 em.colour = 0xFF0000
@@ -37,8 +40,10 @@ class Miscellaneous(commands.Cog):
         elif args[0] == 'name':
             try:
                 self.bot.telnet_object.session.close()
+                self.bot.telnet_object_2.session.close()
                 self.bot.telnet_object.connect(args[1])
-                events.telnet_username = self.bot.telnet_object.username
+                self.bot.telnet_object_2.connect(args[1])
+                self.bot.telnet_object.username
                 config = read_json('config')
                 config['TELNET_USERNAME'] = self.bot.telnet_object.username
                 write_json('config', config)
