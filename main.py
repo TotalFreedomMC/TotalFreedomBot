@@ -17,8 +17,8 @@ load_dotenv()
 botToken = os.getenv('botToken')
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix=get_prefix, case_insensitive=True, description='TotalFreedom bot help command', intents=intents)
-
+bot = commands.Bot(command_prefix=get_prefix, case_insensitive=True, description='TotalFreedom bot help command',
+                   intents=intents)
 
 extensions = [
     "commands.moderation",
@@ -44,10 +44,11 @@ async def on_message(message):
     if isinstance(message.channel, discord.channel.DMChannel):
         print(f'{message.author} DM: {message.content}')
         return
-    if message.guild and message.author is message.guild.me and message.channel.id == reports_channel_id:
+    elif message.guild and message.author is message.guild.me and message.channel.id == reports_channel_id:
         await message.add_reaction(clipboard)
-    if message.type == discord.MessageType.new_member:
-        if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.author.name.lower()) or re.search('discordapp\.com\/invite\/[a-z0-9]+/ig', message.author.name.lower()):
+    elif message.type == discord.MessageType.new_member:
+        if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.author.name.lower()) or re.search(
+                'discordapp\.com\/invite\/[a-z0-9]+/ig', message.author.name.lower()):
             await message.author.ban(reason="Name is an invite link.")
             await message.delete()
     bypass_roles = [discord_admin, discord_mod]
@@ -57,6 +58,12 @@ async def on_message(message):
             if role.id in bypass_roles:
                 bypass = True
     else:
+        server_chats = {1: server_chat, 2: server_chat_2}
+        for server in range(1, len(server_chats)):
+            if message.channel.id == server_chats[server]:
+                if not get_server_status(server):
+                    hit_endpoint('start', server)
+
         if 'Server has started' in message.content:  # Telnet reconnect script
             try:
                 bot.telnet_object.connect()
@@ -68,11 +75,23 @@ async def on_message(message):
                 except Exception as fuckup:
                     print(
                         f'Second attempt failed to reconnect telnet: {fuckup}')
+            try:
+                bot.telnet_object_2.connect()
+            except Exception as e:
+                print(f'Failed to reconnect telnet 2: {e}')
+                time.sleep(5)
+                try:
+                    bot.telnet_object_2.connect()
+                except Exception as fuckup:
+                    print(
+                        f'Second attempt failed to reconnect telnet 2: {fuckup}')
     if not bypass:
-        if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.content) or re.search('discordapp\.com\/invite\/[a-z0-9]+/ig', message.content):
+        if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.content) or re.search(
+                'discordapp\.com\/invite\/[a-z0-9]+/ig', message.content):
             await message.delete()
             await message.channel.send(f"{message.author.mention} do not post invite links to other discord servers.")
 
     await bot.process_commands(message)
+
 
 bot.run(botToken)
