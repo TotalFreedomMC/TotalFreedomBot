@@ -1,12 +1,12 @@
-import discord
-import logscript
-
 from datetime import datetime
+
+import discord
 from discord.ext import commands
-from checks import *
-from functions import *
-from unicode import confirm, clipboard, cancel
+
+import logscript
+from functions import read_json, get_avatar, did_mention_other_user, removed_user_mentions, removed_role_mentions
 from telnet import telnet
+from unicode import confirm, clipboard, cancel
 
 print = logscript.logging.getLogger().critical
 
@@ -22,20 +22,20 @@ class Events(commands.Cog):
         telnet_port = config['TELNET_PORT']
         telnet_username = config['TELNET_USERNAME']
         telnet_password = config['TELNET_PASSWORD']
-        
+
         telnet_ip_2 = config['SERVER_IP_2']
-        
+
         self.bot.reaction_roles = []
         self.bot.telnet_object = telnet(
             telnet_ip, telnet_port, telnet_username, telnet_password)
         self.bot.telnet_object.connect()
-        
+
         self.bot.telnet_object_2 = telnet(
             telnet_ip_2, telnet_port, telnet_username, telnet_password)
         self.bot.telnet_object_2.connect()
-        
-        
-        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [TELNET] Bot logged into Telnet as: {self.bot.telnet_object.username}')
+
+        print(
+            f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [TELNET] Bot logged into Telnet as: {self.bot.telnet_object.username}')
 
         reaction_data = read_json('config')
         self.bot.reaction_roles = reaction_data['reaction_roles']
@@ -44,16 +44,18 @@ class Events(commands.Cog):
         game = discord.Game('play.totalfreedom.me')
         await self.bot.change_presence(status=discord.Status.online, activity=game)
 
-        guildCount = len(self.bot.guilds)
-        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] bot currently in {guildCount} guilds.')
+        guild_count = len(self.bot.guilds)
+        print(
+            f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] bot currently in {guild_count} guilds.')
         for guild in self.bot.guilds:
-            print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] Connected to guild: {guild.name}, Owner: {guild.owner}')
+            print(
+                f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Guilds] Connected to guild: {guild.name}, Owner: {guild.owner}')
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
         if not isinstance(before.author, discord.Member):
             return
-        if before.guild.id != guild_id:
+        if before.guild.id != self.bot.guild_id:
             return
         users = removed_user_mentions(before.mentions, after.mentions)
         roles = removed_role_mentions(
@@ -74,14 +76,14 @@ class Events(commands.Cog):
         embed.title = "Message Edit"
         embed.set_footer(text=str(before.author),
                          icon_url=get_avatar(before.author))
-        channel = before.guild.get_channel(mentions_channel_id)
+        channel = before.guild.get_channel(self.bot.mentions_channel_id)
         await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         if not isinstance(message.author, discord.Member):
             return
-        if message.guild.id != guild_id:
+        if message.guild.id != self.bot.guild_id:
             return
         users = None
         roles = None
@@ -101,7 +103,7 @@ class Events(commands.Cog):
         embed.title = "Message Deletion"
         embed.set_footer(text=str(message.author),
                          icon_url=get_avatar(message.author))
-        channel = message.guild.get_channel(mentions_channel_id)
+        channel = message.guild.get_channel(self.bot.mentions_channel_id)
         await channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -111,14 +113,17 @@ class Events(commands.Cog):
         em.description = f'{error}'
         em.colour = 0xFF0000
         await ctx.send(embed=em)
-        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} (ID: {ctx.author.id}) failed running: {ctx.message.content} in guild: {ctx.guild.name}')
+        print(
+            f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} (ID: {ctx.author.id}) failed running: {ctx.message.content} in guild: {ctx.guild.name}')
 
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):
-        print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} (ID: {ctx.author.id}) ran: {ctx.message.content} in guild: {ctx.guild.name}')
-        bot_logs_channel = self.bot.get_channel(bot_logs_channel_id)
+        print(
+            f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Commands] {ctx.author} (ID: {ctx.author.id}) ran: {ctx.message.content} in guild: {ctx.guild.name}')
+        bot_logs_channel = self.bot.get_channel(self.bot.bot_logs_channel_id)
         log = discord.Embed(
-            title='Logging', description=f'{ctx.author} (ID: {ctx.author.id}) ran: {ctx.message.content}', colour=0xA84300)
+            title='Logging', description=f'{ctx.author} (ID: {ctx.author.id}) ran: {ctx.message.content}',
+            colour=0xA84300)
         await bot_logs_channel.send(embed=log)
 
     @commands.Cog.listener()
@@ -130,10 +135,11 @@ class Events(commands.Cog):
                 if 'sixx' in payload.member.name.lower():
                     return
                 if msg_id == payload.message_id and emoji == str(payload.emoji.name):
-                    await payload.member.add_roles(self.bot.get_guild(payload.guild_id).get_role(role_id), reason='reaction')
-            if payload.channel_id == reports_channel_id:
-                guild = self.bot.get_guild(guild_id)
-                reports_channel = self.bot.get_channel(reports_channel_id)
+                    await payload.member.add_roles(self.bot.get_guild(payload.guild_id).get_role(role_id),
+                                                   reason='reaction')
+            if payload.channel_id == self.bot.reports_channel_id:
+                guild = self.bot.get_guild(self.bot.guild_id)
+                reports_channel = self.bot.get_channel(self.bot.reports_channel_id)
                 report = await reports_channel.fetch_message(payload.message_id)
                 if report.author == guild.me:
                     if payload.emoji.name == clipboard:
@@ -145,9 +151,10 @@ class Events(commands.Cog):
                     elif payload.emoji.name == confirm:
                         embed = report.embeds[0]
                         archived_reports_channel = self.bot.get_channel(
-                            archived_reports_channel_id)
+                            self.bot.archived_reports_channel_id)
                         await report.delete()
-                        await archived_reports_channel.send("Handled by " + guild.get_member(payload.user_id).mention, embed=embed)
+                        await archived_reports_channel.send("Handled by " + guild.get_member(payload.user_id).mention,
+                                                            embed=embed)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -156,7 +163,8 @@ class Events(commands.Cog):
         else:
             for role_id, msg_id, emoji in self.bot.reaction_roles:
                 if msg_id == payload.message_id and emoji == str(payload.emoji.name):
-                    await self.bot.get_guild(payload.guild_id).get_member(payload.user_id).remove_roles(self.bot.get_guild(payload.guild_id).get_role(role_id), reason='reaction')
+                    await self.bot.get_guild(payload.guild_id).get_member(payload.user_id).remove_roles(
+                        self.bot.get_guild(payload.guild_id).get_role(role_id), reason='reaction')
 
 
 def setup(bot):
