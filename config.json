@@ -1,8 +1,13 @@
 {
-    "TELNET_IP": "[IP]",
-    "TELNET_PORT": [PORT],
-    "TELNET_USERNAME": "[USERNAME]",
-    "TELNET_PASSWORD": "[PASSWORD]"
+    "SERVER_IP": FIRST_SERVER_IP,
+    "SERVER_IP_2": SECOND_SERVER_IP,
+    "TELNET_PORT": TELNET_PORT,
+    "PLAYERLIST_PORT": PLAYERLIST_PORT,
+    "ENDPOINTS_PORT": PORT_TO_HIT_ENDPOINTS,
+    "ENDPOINTS_PW": PASSWORD_WHEN_HITTING_ENDPOINTS_FIRST_SERVER,
+    "ENDPOINTS_PW_2": PASSWORD_WHEN_HITTING_ENDPOINTS_SECOND_SERVER,
+    "TELNET_USERNAME": TELNET_USERNAME,
+    "TELNET_PASSWORD": TELNET_PASSWORD,
     "reaction_roles": [
         [
             769659653121900547,
@@ -24,5 +29,29 @@
             769928118566780978,
             "\u2705"
         ]
-    ]
+    ],
+    "server_liaison": 769659653096472634,
+    "event_host": 769659653096472629,
+    "server_banned": 769659653096472636,
+    "senior_admin": 769659653129896016,
+    "admin": 769659653121900553,
+    "master_builder": 769659653121900550,
+    "reports_channel_id": 769659654791233585,
+    "archived_reports_channel_id": 769659655033978900,
+    "guild_id": 769659653096472627,
+    "mentions_channel_id": 769659654027739151,
+    "discord_admin": 769659653129896025,
+    "discord_mod": 769659653129896023,
+    "devs": [
+        114348811995840515,
+        147765181903011840
+    ],
+    "bot_logs_channel_id": 771391406609662013,
+    "executive": 769659653129896019,
+    "asst_exec": 769659653129896018,
+    "developer": 769659653129896017,
+    "creative_designer": 771748500576141332,
+    "server_chat": 769843495045169163,
+    "verification_role": 769925060412309524,
+    "server_chat_2": 793632795598913546
 }
