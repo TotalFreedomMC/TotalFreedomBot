@@ -13,7 +13,7 @@ class Help(commands.Cog):
 
     @commands.command(aliases=['h', '?'])
     async def help(self, ctx, page=1):
-        'Displays the help command'
+        """Displays the help command"""
         em = discord.Embed()
         em.title = 'Help Command'
         cog_list = [c for c in self.bot.cogs.keys()]
@@ -43,7 +43,7 @@ class Help(commands.Cog):
                 for check in command.checks:
                     try:
                         check(ctx)
-                    except:
+                    except commands.MissingPermissions:
                         showcommand = False
                 if showcommand:
                     command_list += f'**{ctx.prefix}{command.name}** - {command.help}\n'
