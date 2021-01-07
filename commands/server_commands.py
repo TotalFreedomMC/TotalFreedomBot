@@ -1,16 +1,16 @@
+import re
+from datetime import datetime
+
 import discord
 import requests
-import re
-import time
-
-from checks import *
 from discord.ext import commands
-from datetime import datetime
-from functions import *
+
+from checks import is_liaison, is_staff, is_senior, is_creative_designer, is_mod_or_has_perms, NoPermission
+from functions import hit_endpoint, get_server_status, format_list_entry, read_json
 from unicode import clipboard
 
 
-class ServerCommands(commands.Cog):
+class ServerCommands(commands.Cog, name="Server Commands"):
     def __init__(self, bot):
         self.bot = bot
 
@@ -30,7 +30,7 @@ class ServerCommands(commands.Cog):
     @is_liaison()
     async def eventhost(self, ctx, user: discord.Member):
         """Add or remove event host role - liaison only."""
-        eventhostrole = ctx.guild.get_role(event_host)
+        eventhostrole = ctx.guild.get_role(self.bot.event_host)
         if eventhostrole in user.roles:
             await user.remove_roles(eventhostrole)
             await ctx.send(f'```Succesfully took {eventhostrole.name} from {user.name}```')
@@ -42,7 +42,7 @@ class ServerCommands(commands.Cog):
     @is_creative_designer()
     async def masterbuilder(self, ctx, user: discord.Member):
         """Add or remove master builder role - ECD only."""
-        master_builder_role = ctx.guild.get_role(master_builder)
+        master_builder_role = ctx.guild.get_role(self.bot.master_builder)
         if master_builder_role in user.roles:
             await user.remove_roles(master_builder_role)
             await ctx.send(f'```Succesfully took {master_builder_role.name} from {user.name}```')
@@ -54,7 +54,7 @@ class ServerCommands(commands.Cog):
     @is_staff()
     async def serverban(self, ctx, user: discord.Member):
         """Add or remove server banned role."""
-        serverbannedrole = ctx.guild.get_role(server_banned)
+        serverbannedrole = ctx.guild.get_role(self.bot.server_banned)
         if serverbannedrole in user.roles:
             await user.remove_roles(serverbannedrole)
             await ctx.send(f'Took Server Banned role from {user.name}')
@@ -144,12 +144,12 @@ class ServerCommands(commands.Cog):
                                           bytes(command, 'ascii') + b"\r\n")
             elif args[0] == 'saconfig':
                 if args[1] not in ['add', 'remove']:
-                    raise no_permission(['IS_SENIOR_ADMIN'])
+                    raise NoPermission(['IS_SENIOR_ADMIN'])
                 else:
                     self.write_telnet_session(server,
                                               bytes(command, 'ascii') + b"\r\n")
             else:
-                raise no_permission(['IS_SENIOR_ADMIN'])
+                raise NoPermission(['IS_SENIOR_ADMIN'])
         except Exception as e:
             em.title = 'Command error'
             em.colour = 0xFF0000
@@ -181,8 +181,7 @@ class ServerCommands(commands.Cog):
             if 'error' in attempt.lower():
                 em.title = 'Command error'
                 em.colour = 0xFF0000
-                em.description = '{attempt}'
-                print(f'Error while killing server: {e}')
+                em.description = f'{attempt}'
                 await ctx.send(embed=em)
             else:
                 em.title = 'Success'
@@ -280,9 +279,9 @@ class ServerCommands(commands.Cog):
 
                 order = ['Owners', 'Executives', 'Developers', 'Senior Admins', 'Admins', 'Master Builders',
                          'Operators', 'Imposters']
-                sorted = [entry for rank in order for entry in entries if entry.name == rank]
+                sorted_ranks = [entry for rank in order for entry in entries if entry.name == rank]
 
-                for x in sorted:
+                for x in sorted_ranks:
                     em.add_field(name=f'{x.name} ({x.playercount})', value=x.value, inline=False)
 
         except Exception as e:
@@ -294,16 +293,15 @@ class ServerCommands(commands.Cog):
     async def ip(self, ctx):
         """Returns the server IP."""
         await ctx.send(embed=discord.Embed(description='play.totalfreedom.me', title='Server IP'))
-        # pass #discordSRV responds already.
 
     @commands.command()
     @is_staff()
     async def archivereports(self, ctx):
         """Archive all in-game reports older than 24 hours."""
         count = 0
-        reports_channel = self.bot.get_channel(reports_channel_id)
+        reports_channel = self.bot.get_channel(self.bot.reports_channel_id)
         archived_reports_channel = self.bot.get_channel(
-            archived_reports_channel_id)
+            self.bot.archived_reports_channel_id)
         await ctx.channel.trigger_typing()
         async for report in reports_channel.history(limit=100):
             try:
@@ -353,7 +351,8 @@ class ServerCommands(commands.Cog):
 
             try:
                 server_uptime = \
-                re.match('([0-9]+ days? )?([0-9]+ hours )?([0-9]+ minutes )?([0-6]?[0-9] seconds)', server_uptime)[0]
+                    re.match('([0-9]+ days? )?([0-9]+ hours )?([0-9]+ minutes )?([0-6]?[0-9] seconds)', server_uptime)[
+                        0]
                 server_tps = re.match('[0-2][0-9].?[0-9]*', server_tps)[0]
                 maximum_memory = re.match('[0-9]+,?[0-9]* MB', maximum_memory)[0]
                 allocated_memory = re.match('[0-9]+,?[0-9]* MB', allocated_memory)[0]
@@ -375,7 +374,7 @@ class ServerCommands(commands.Cog):
     @is_mod_or_has_perms()
     async def fixreports(self, ctx):
         await ctx.channel.trigger_typing()
-        reports_channel = self.bot.get_channel(reports_channel_id)
+        reports_channel = self.bot.get_channel(self.bot.reports_channel_id)
         messages = await reports_channel.history(limit=500).flatten()
         fixed = 0
         for message in messages:
