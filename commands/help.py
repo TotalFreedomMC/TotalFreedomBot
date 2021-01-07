@@ -1,7 +1,8 @@
 import math
-import discord
 
+import discord
 from discord.ext import commands
+
 from functions import get_avatar
 
 
@@ -15,7 +16,6 @@ class Help(commands.Cog):
         'Displays the help command'
         em = discord.Embed()
         em.title = 'Help Command'
-        command_list = ''
         cog_list = [c for c in self.bot.cogs.keys()]
         page_count = math.ceil(len(cog_list) / 4)
 
