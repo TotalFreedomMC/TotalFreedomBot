@@ -2,9 +2,10 @@ import asyncio
 from datetime import datetime
 
 import discord
-from checks import *
 from discord.ext import commands
-from functions import *
+
+from checks import is_dev, is_tf_developer
+from functions import read_json, write_json
 
 
 class Miscellaneous(commands.Cog):
@@ -41,7 +42,6 @@ class Miscellaneous(commands.Cog):
                 self.bot.telnet_object_2.session.close()
                 self.bot.telnet_object.connect(args[1])
                 self.bot.telnet_object_2.connect(args[1])
-                self.bot.telnet_object.username
                 config = read_json('config')
                 config['TELNET_USERNAME'] = self.bot.telnet_object.username
                 write_json('config', config)
@@ -62,7 +62,7 @@ class Miscellaneous(commands.Cog):
                 bytes(command, 'ascii') + b"\r\n")
             self.bot.telnet_object.session.read_until(
                 bytes(f'{time_sent} INFO]:', 'ascii'), 2)
-            if ctx.channel == ctx.guild.get_channel(server_chat):
+            if ctx.channel == ctx.guild.get_channel(self.bot.server_chat):
                 self.bot.telnet_object.session.read_until(
                     bytes('\r\n', 'ascii'), 2)
             next_line = self.bot.telnet_object.session.read_until(
@@ -77,7 +77,7 @@ class Miscellaneous(commands.Cog):
     @is_dev()
     @commands.command()
     async def debug(self, ctx, *, cmd):
-        'Executes a line of code'
+        """Executes a line of code"""
         try:
             result = eval(cmd)
             if asyncio.iscoroutine(result):
