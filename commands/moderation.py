@@ -1,9 +1,10 @@
-import discord
 import datetime
 
+import discord
 from discord.ext import commands
-from checks import *
-from functions import *
+
+from checks import is_mod_or_has_perms
+from functions import read_json, write_json
 
 muted_role_id = 769659653121900546
 
@@ -18,24 +19,30 @@ class Moderation(commands.Cog):
     async def kick(self, ctx, user: discord.Member, *, reason="No reason specified"):
         """Kicks a user from the guild."""
         await user.kick(reason=f'{reason}**  **by: {ctx.author.name}')
-        await ctx.send(embed=discord.Embed(embed=f'{user.name} has been kicked by: {ctx.author.name} for reason: {reason}'))
-        print(f"[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Kicked {user.name} from {ctx.guild.name}")
+        await ctx.send(
+            embed=discord.Embed(embed=f'{user.name} has been kicked by: {ctx.author.name} for reason: {reason}'))
+        print(
+            f"[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Kicked {user.name} from {ctx.guild.name}")
 
     @commands.command(aliases=['gtfo'])
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, user: discord.Member, *, reason="No reason specified"):
         """Bans a user from the guild."""
         await user.ban(reason=f'{reason} || by: {ctx.author.name}', delete_message_days=0)
-        await ctx.send(embed=discord.Embed(description=f'{user.name} has been banned by: {ctx.author.name} for reason: {reason}'))
-        print(f"[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Banned {user.name} from {ctx.guild.name}")
+        await ctx.send(
+            embed=discord.Embed(description=f'{user.name} has been banned by: {ctx.author.name} for reason: {reason}'))
+        print(
+            f"[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Banned {user.name} from {ctx.guild.name}")
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
     async def unban(self, ctx, user: discord.User, *, reason="No reason specified"):
         """Unbans a user from the guild."""
         await ctx.guild.unban(user, reason=f'{reason} || by: {ctx.author.name}')
-        await ctx.send(embed=discord.Embed(description=f'{user.name} has been unbanned by: {ctx.author.name} for reason: {reason}'))
-        print(f"[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Banned {user.name} from {ctx.guild.name}")
+        await ctx.send(embed=discord.Embed(
+            description=f'{user.name} has been unbanned by: {ctx.author.name} for reason: {reason}'))
+        print(
+            f"[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Banned {user.name} from {ctx.guild.name}")
 
     @commands.command(aliases=['massdelete', 'purge'])
     @commands.has_permissions(manage_messages=True)
@@ -44,7 +51,8 @@ class Moderation(commands.Cog):
         channel = ctx.channel
         await channel.purge(limit=(int(msgs) + 1))
         await ctx.send(embed=discord.Embed(description=f'{ctx.author.name} deleted {msgs} messages'))
-        print(f'[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] {ctx.author.name} purged {msgs} messages in {ctx.guild.name}')
+        print(
+            f'[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] {ctx.author.name} purged {msgs} messages in {ctx.guild.name}')
 
     @commands.command(aliases=['stfu'])
     @commands.has_permissions(manage_messages=True)
@@ -55,7 +63,8 @@ class Moderation(commands.Cog):
         if reason == '':
             reason = 'No reason specified'
         await ctx.send(embed=discord.Embed(description=f'{member} muted by: {ctx.author.name} for: {reason}'))
-        print(f'[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Muted {member} in {ctx.guild.name}')
+        print(
+            f'[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Muted {member} in {ctx.guild.name}')
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
@@ -64,7 +73,8 @@ class Moderation(commands.Cog):
         muted_role = ctx.guild.get_role(muted_role_id)
         await member.remove_roles(muted_role, reason=f'{reason} || by {ctx.author.name}')
         await ctx.send(embed=discord.Embed(description=f'{member} unmuted by {ctx.author.name}'))
-        print(f'[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Unmuted {member} in {ctx.guild.name}')
+        print(
+            f'[{datetime.datetime.utcnow().replace(microsecond=0)} INFO]: [Moderation] Unmuted {member} in {ctx.guild.name}')
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
@@ -76,6 +86,13 @@ class Moderation(commands.Cog):
             data['reaction_roles'].append([role.id, msg.id, emoji])
             print(data['reaction_roles'])
             write_json('config', data)
+
+    @commands.command()
+    @is_mod_or_has_perms(manage_roles=True)
+    async def verify(self, ctx, member: discord.Member):
+        verify_role = ctx.guild.get_role(self.bot.verification_role)
+        await member.add_roles(verify_role)
+        await ctx.send(f'```Successfully verified: {member.name}```')
 
 
 def setup(bot):
