@@ -18,18 +18,10 @@ class Help(commands.Cog):
             title = 'Help Command'
             colour = 0x00FF00
             )
-        cog_list = [cog_iter for cog_iter in self.bot.cogs.keys()]
+        cog_list = [c for c in self.bot.cogs.keys()]
         page_count = math.ceil(len(cog_list) / 4)
 
-        try:
-            page = int(page)
-        except Exception as e:
-            em = discord.Embed(
-                title = 'Command error'
-                colour = 0xFF0000
-                description = e
-            )
-        
+        page = int(page)
         if page > page_count or page < 1:
             await ctx.send(f'Page number \'{page}\' not found.')
             return
