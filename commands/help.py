@@ -14,8 +14,9 @@ class Help(commands.Cog):
     @commands.command(aliases=['h', '?'])
     async def help(self, ctx, page=1):
         """Displays the help command"""
-        em = discord.Embed()
-        em.title = 'Help Command'
+        em = discord.Embed(
+            title = 'Help Command'
+            )
         cog_list = [c for c in self.bot.cogs.keys()]
         page_count = math.ceil(len(cog_list) / 4)
 
