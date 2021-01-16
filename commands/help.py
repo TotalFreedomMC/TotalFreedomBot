@@ -16,6 +16,7 @@ class Help(commands.Cog):
         """Displays the help command"""
         em = discord.Embed(
             title = 'Help Command'
+            colour = 0x00FF00
             )
         cog_list = [c for c in self.bot.cogs.keys()]
         page_count = math.ceil(len(cog_list) / 4)
