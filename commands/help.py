@@ -36,9 +36,7 @@ class Help(commands.Cog):
             command_list = ''
             for command in self.bot.get_cog(cog).get_commands():
                 showcommand = True
-                if command.hidden:
-                    showcommand = False
-                if command.parent:
+                if command.hidden or command.parent:
                     showcommand = False
                 for check in command.checks:
                     try:
