@@ -14,8 +14,10 @@ class Help(commands.Cog):
     @commands.command(aliases=['h', '?'])
     async def help(self, ctx, page=1):
         """Displays the help command"""
-        em = discord.Embed()
-        em.title = 'Help Command'
+        em = discord.Embed(
+            title='Help Command',
+            colour=0x00FF00,
+            )
         cog_list = [c for c in self.bot.cogs.keys()]
         page_count = math.ceil(len(cog_list) / 4)
 
@@ -36,9 +38,7 @@ class Help(commands.Cog):
             command_list = ''
             for command in self.bot.get_cog(cog).get_commands():
                 showcommand = True
-                if command.hidden:
-                    showcommand = False
-                if command.parent:
+                if command.hidden or command.parent:
                     showcommand = False
                 for check in command.checks:
                     try:
