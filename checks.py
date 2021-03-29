@@ -4,10 +4,13 @@ from discord.ext import commands
 class NoPermission(commands.MissingPermissions):
     pass
 
+
 class notAdminCommand(Exception):
-    def __init__(self, message="The command you attempted does not exist or is not a whitelisted command for the adminconsole."):
-        self.message=message
+    def __init__(self,
+                 message="The command you attempted does not exist or is not a whitelisted command for the adminconsole."):
+        self.message = message
         super().__init__(self.message)
+
 
 def is_staff():
     def predicate(ctx):
@@ -102,7 +105,9 @@ def is_smp_owner():
                 return True
         else:
             raise NoPermission(['IS_GMOD_OWNER'])
+
     return commands.check(predicate)
+
 
 def is_gmod_owner():
     def predicate(ctx):
