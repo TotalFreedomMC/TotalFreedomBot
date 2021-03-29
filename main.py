@@ -11,7 +11,7 @@ import logscript
 from functions import config_entry, get_prefix, hit_endpoint, get_server_status
 from unicode import clipboard
 
-print = logscript.logging.getLogger().critical
+#print = logscript.logging.getLogger().critical
 
 load_dotenv()
 botToken = os.getenv('botToken')
@@ -41,6 +41,14 @@ bot.creative_designer = config_entry("creative_designer")
 bot.server_chat = config_entry("server_chat")
 bot.verification_role = config_entry("verification_role")
 bot.server_chat_2 = config_entry("server_chat_2")
+bot.guild_id = 769659653096472627
+bot.smp_server_chat = config_entry("smp_server_chat")
+bot.smpstaff_role_id = config_entry("smpstaff_role_id")
+bot.smp_owner_id = config_entry("smp_owner_id")
+bot.gmod_server_chat = config_entry("gmod_server_chat")
+bot.gmodstaff_role_id = config_entry("gmodstaff_role_id")
+bot.gmod_owner_id = config_entry('gmod_owner_id')
+bot.auto_restart = False
 
 extensions = [
     "commands.moderation",
@@ -55,10 +63,12 @@ if __name__ == '__main__':
         try:
             bot.load_extension(extension)
             print(
-                f"[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Extensions] {extension} loaded successfully")
+                f"[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Extensions] {extension} loaded "
+                f"successfully")
         except Exception as e:
             print(
-                f"[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Extensions] {extension} didn't load {e}")
+                f"[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Extensions] {extension} didn't load {e}"
+            )
 
 
 @bot.event
@@ -79,34 +89,58 @@ async def on_message(message):
         for role in message.author.roles:
             if role.id in bypass_roles:
                 bypass = True
-    else:
-        server_chats = {1: bot.server_chat, 2: bot.server_chat_2}
-        for server in range(1, len(server_chats)):
-            if message.channel.id == server_chats[server]:
-                if not get_server_status(server):
-                    hit_endpoint('start', server)
 
-        if 'Server has started' in message.content:  # Telnet reconnect script
+        asked_for_ip = re.search("(((give *(me)?)|(wh?at'? *i?s?))( *the)?( *server)? *ip)|(ip\?)", message.content.lower())
+        if asked_for_ip is not None:
+            print("THE IP IS GAY")
+            em = discord.Embed(
+                title='Server IP',
+                colour=0xA84300,
+                description='play.totalfreedom.me'
+            )
+            await message.channel.send(embed=em)
+
+        if bot.auto_restart:
+            server_chats = [bot.server_chat, bot.server_chat_2]
+            for server in range(1, 3):
+                if message.channel.id == server_chats[server]:
+                    if not get_server_status(server):
+                        em = discord.Embed()
+                        em.title = 'Automatic restart'
+                        attempt = hit_endpoint('start', server)
+                        if attempt == "ERROR - There is an instance of the server already running. Make sure it is " \
+                                      "killed first and try again":
+                            hit_endpoint('stop', server)
+                            hit_endpoint('stop', server)
+                            hit_endpoint('start', server)
+                            em.colour = 0x00FF00
+                            em.description = 'Server has been automatically restarted.'
+                        else:
+                            em.colour = 0x00FF00
+                            em.description = 'Server has been automatically started.'
+                        await message.channel.send(embed=em)
+
+    if 'Server has started' in message.content:  # Telnet reconnect script
+        try:
+            bot.telnet_object.connect()
+        except Exception as err:
+            print(f'Failed to reconnect telnet: {err}')
+            time.sleep(5)
             try:
                 bot.telnet_object.connect()
-            except Exception as err:
-                print(f'Failed to reconnect telnet: {err}')
-                time.sleep(5)
-                try:
-                    bot.telnet_object.connect()
-                except Exception as fuckup:
-                    print(
-                        f'Second attempt failed to reconnect telnet: {fuckup}')
+            except Exception as fuckup:
+                print(
+                    f'Second attempt failed to reconnect telnet: {fuckup}')
+        try:
+            bot.telnet_object_2.connect()
+        except Exception as err:
+            print(f'Failed to reconnect telnet 2: {err}')
+            time.sleep(5)
             try:
                 bot.telnet_object_2.connect()
-            except Exception as err:
-                print(f'Failed to reconnect telnet 2: {err}')
-                time.sleep(5)
-                try:
-                    bot.telnet_object_2.connect()
-                except Exception as fuckup:
-                    print(
-                        f'Second attempt failed to reconnect telnet 2: {fuckup}')
+            except Exception as fuckup:
+                print(
+                    f'Second attempt failed to reconnect telnet 2: {fuckup}')
     if not bypass:
         if re.search('discord\.gg\/[a-zA-z0-9\-]{1,16}', message.content) or re.search(
                 'discordapp\.com\/invite\/[a-z0-9]+/ig', message.content):
