@@ -5,8 +5,9 @@ import discord
 import requests
 from discord.ext import commands
 
-from checks import is_liaison, is_staff, is_senior, is_creative_designer, is_mod_or_has_perms, NoPermission, is_dev, is_gmod_owner, is_smp_owner, notAdminCommand
-from functions import hit_endpoint, get_server_status, format_list_entry, read_json
+from checks import is_liaison, is_staff, is_senior, is_creative_designer, is_mod_or_has_perms, NoPermission, is_dev, \
+    is_gmod_owner, is_smp_owner, notAdminCommand
+from functions import hit_endpoint, get_server_status, format_list_entry, read_json, get_visible_player_count
 from unicode import clipboard
 
 
@@ -49,7 +50,7 @@ class ServerCommands(commands.Cog, name="Server Commands"):
         else:
             await user.add_roles(master_builder_role)
             await ctx.send(f'```Succesfully added {master_builder_role.name} to {user.name}```')
-    
+
     @commands.command()
     @is_gmod_owner()
     async def gmodstaff(self, ctx, user: discord.Member):
@@ -61,7 +62,7 @@ class ServerCommands(commands.Cog, name="Server Commands"):
         else:
             await user.add_roles(gmodstaff_role)
             await ctx.send(f'```Succesfully added {gmodstaff_role.name} to {user.name}```')
-    
+
     @commands.command()
     @is_smp_owner()
     async def smpstaff(self, ctx, user: discord.Member):
@@ -72,8 +73,8 @@ class ServerCommands(commands.Cog, name="Server Commands"):
             await ctx.send(f'```Succesfully took {smpstaff_role.name} from {user.name}```')
         else:
             await user.add_roles(smpstaff_role)
-            await ctx.send(f'```Succesfully added {smpstaff_role.name} to {user.name}```') 
-    
+            await ctx.send(f'```Succesfully added {smpstaff_role.name} to {user.name}```')
+
     @commands.command()
     @is_staff()
     async def serverban(self, ctx, user: discord.Member):
@@ -124,7 +125,7 @@ class ServerCommands(commands.Cog, name="Server Commands"):
         except Exception as e:
             em.title = 'Command error'
             em.colour = 0xFF0000
-            print(f'Error while starting freedom-0{server}: {e}')
+            print(f'Error while getting VPS Uptime: {e}')
             em.description = f'Something went wrong'
         else:
             em.description = attempt
@@ -143,7 +144,7 @@ class ServerCommands(commands.Cog, name="Server Commands"):
             tempem.title = "Command sending"
             tempem.description = "Please stand by this could take a minute"
             tempem.colour = 0xFFFF00
-            tempm = await ctx.send(embed = tempem)
+            tempm = await ctx.send(embed=tempem)
             attempt = hit_endpoint('stop', server, timeout=30)
         except Exception as e:
             await tempm.delete()
@@ -308,7 +309,6 @@ class ServerCommands(commands.Cog, name="Server Commands"):
             if json["online"] == 0:
                 em.description = "There are no online players"
             else:
-                em.description = f"There are {json['online']} / {json['max']} online players"
                 ranks = list(json.keys())
 
                 entries = []
@@ -322,6 +322,15 @@ class ServerCommands(commands.Cog, name="Server Commands"):
 
                 order = ['Owners', 'Executives', 'Developers', 'Senior Admins', 'Admins', 'Master Builders',
                          'Operators', 'Imposters']
+
+                players = {}
+                rank_categories = ["owners", "master_builders", "senior_admins", "imposters", "executives",
+                                   "developers", "operators", "admins"]
+                for x in json:
+                    if x in rank_categories:
+                        players[x] = json[x]
+                print(players)
+                em.description = f"There are {get_visible_player_count(players)} / {json['max']} online players"
                 sorted_ranks = [entry for rank in order for entry in entries if entry.name == rank]
 
                 for x in sorted_ranks:
