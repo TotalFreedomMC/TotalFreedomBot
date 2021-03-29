@@ -119,7 +119,7 @@ def get_server_status(server=1):
 def get_visible_player_count(list_json):
     total = 0
     for x in list_json:
-        if type(list_json[x]) == list:
+        if isinstance(list_json[x], list):
             total += len(list_json[x])
-    
+
     return total
