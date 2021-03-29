@@ -4,6 +4,10 @@ from discord.ext import commands
 class NoPermission(commands.MissingPermissions):
     pass
 
+class notAdminCommand(Exception):
+    def __init__(self, message="The command you attempted does not exist or is not a whitelisted command for the adminconsole."):
+        self.message=message
+        super().__init__(self.message)
 
 def is_staff():
     def predicate(ctx):
@@ -32,7 +36,9 @@ def is_mod_or_has_perms(**permissions):
     def predicate(ctx):
         user = ctx.message.author
         for role in user.roles:
-            if role.id in [ctx.bot.discord_mod, ctx.bot.discord_admin] or permissions:
+            if role.id in [ctx.bot.discord_mod, ctx.bot.discord_admin] or permissions and all(
+                    getattr(ctx.channel.permissions_for(ctx.author), name, None) == value for name, value in
+                    permissions.items()):
                 return True
         else:
             raise NoPermission(['IS_MOD_OR_HAS_PERMS'])
@@ -84,6 +90,28 @@ def is_creative_designer():
                 return True
         else:
             raise NoPermission(['IS_CREATIVE_DESIGNER'])
+
+    return commands.check(predicate)
+
+
+def is_smp_owner():
+    def predicate(ctx):
+        user = ctx.message.author
+        for role in user.roles:
+            if role.id == ctx.bot.smp_owner_id:
+                return True
+        else:
+            raise NoPermission(['IS_GMOD_OWNER'])
+    return commands.check(predicate)
+
+def is_gmod_owner():
+    def predicate(ctx):
+        user = ctx.message.author
+        for role in user.roles:
+            if role.id == ctx.bot.gmod_owner_id:
+                return True
+        else:
+            raise NoPermission(['IS_GMOD_OWNER'])
 
     return commands.check(predicate)
 
