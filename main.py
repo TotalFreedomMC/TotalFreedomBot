@@ -7,11 +7,10 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-import logscript
 from functions import config_entry, get_prefix, hit_endpoint, get_server_status
 from unicode import clipboard
 
-#print = logscript.logging.getLogger().critical
+# print = logscript.logging.getLogger().critical
 
 load_dotenv()
 botToken = os.getenv('botToken')
@@ -90,7 +89,8 @@ async def on_message(message):
             if role.id in bypass_roles:
                 bypass = True
 
-        asked_for_ip = re.search("(((give *(me)?)|(wh?at'? *i?s?))( *the)?( *server)? *ip)|(ip\?)", message.content.lower())
+        asked_for_ip = re.search("(((give *(me)?)|(wh?at'? *i?s?))( *the)?( *server)? *ip)|(ip\?)",
+                                 message.content.lower())
         if asked_for_ip is not None:
             print("THE IP IS GAY")
             em = discord.Embed(
