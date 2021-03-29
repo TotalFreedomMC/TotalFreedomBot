@@ -105,7 +105,12 @@ class Events(commands.Cog):
                          icon_url=get_avatar(message.author))
         channel = message.guild.get_channel(self.bot.mentions_channel_id)
         await channel.send(embed=embed)
-
+    
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        pass
+        #await member.add_roles(self.bot.get_guild(self.bot.guild_id).get_role(self.bot.verification_role))
+    
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         em = discord.Embed()
