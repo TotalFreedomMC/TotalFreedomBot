@@ -5,7 +5,7 @@ import discord
 import requests
 from discord.ext import commands
 
-from checks import is_liaison, is_staff, is_senior, is_creative_designer, is_mod_or_has_perms, NoPermission
+from checks import is_liaison, is_staff, is_senior, is_creative_designer, is_mod_or_has_perms, NoPermission, is_dev, is_gmod_owner, is_smp_owner, notAdminCommand
 from functions import hit_endpoint, get_server_status, format_list_entry, read_json
 from unicode import clipboard
 
@@ -49,7 +49,31 @@ class ServerCommands(commands.Cog, name="Server Commands"):
         else:
             await user.add_roles(master_builder_role)
             await ctx.send(f'```Succesfully added {master_builder_role.name} to {user.name}```')
-
+    
+    @commands.command()
+    @is_gmod_owner()
+    async def gmodstaff(self, ctx, user: discord.Member):
+        """Add or remove GMOD Staff role - Manager only."""
+        gmodstaff_role = ctx.guild.get_role(self.bot.gmodstaff_role_id)
+        if gmodstaff_role in user.roles:
+            await user.remove_roles(gmodstaff_role)
+            await ctx.send(f'```Succesfully took {gmodstaff_role.name} from {user.name}```')
+        else:
+            await user.add_roles(gmodstaff_role)
+            await ctx.send(f'```Succesfully added {gmodstaff_role.name} to {user.name}```')
+    
+    @commands.command()
+    @is_smp_owner()
+    async def smpstaff(self, ctx, user: discord.Member):
+        """Add or remove SMP Staff role - Manager only."""
+        smpstaff_role = ctx.guild.get_role(self.bot.smpstaff_role_id)
+        if smpstaff_role in user.roles:
+            await user.remove_roles(smpstaff_role)
+            await ctx.send(f'```Succesfully took {smpstaff_role.name} from {user.name}```')
+        else:
+            await user.add_roles(smpstaff_role)
+            await ctx.send(f'```Succesfully added {smpstaff_role.name} to {user.name}```') 
+    
     @commands.command()
     @is_staff()
     async def serverban(self, ctx, user: discord.Member):
@@ -76,18 +100,18 @@ class ServerCommands(commands.Cog, name="Server Commands"):
             em.title = 'Command error'
             em.colour = 0xFF0000
             em.description = 'Something went wrong'
-            print(f'Error while starting server: {e}')
+            print(f'Error while starting freedom-0{server}: {e}')
             await ctx.send(embed=em)
         else:
             if 'error' in attempt.lower():
                 em.title = 'Command error'
                 em.colour = 0xFF0000
-                em.description = f'{attempt}'
+                em.description = f'freedom-0{server}: {attempt}'
                 await ctx.send(embed=em)
             else:
                 em.title = 'Success'
                 em.colour = 0x00FF00
-                em.description = f'{attempt}'
+                em.description = f'freedom-0{server}: {attempt}'
                 await ctx.send(embed=em)
 
     @commands.command()
@@ -95,7 +119,15 @@ class ServerCommands(commands.Cog, name="Server Commands"):
         """Returns the uptime of the VPS."""
         em = discord.Embed()
         em.title = 'VPS Uptime Information'
-        em.description = hit_endpoint('uptime')
+        try:
+            attempt = hit_endpoint('uptime')
+        except Exception as e:
+            em.title = 'Command error'
+            em.colour = 0xFF0000
+            print(f'Error while starting freedom-0{server}: {e}')
+            em.description = f'Something went wrong'
+        else:
+            em.description = attempt
         await ctx.send(embed=em)
 
     @commands.command()
@@ -107,23 +139,30 @@ class ServerCommands(commands.Cog, name="Server Commands"):
         if ctx.channel.id == 793632795598913546:
             server = 2
         try:
-            attempt = hit_endpoint('stop', server)
+            tempem = discord.Embed()
+            tempem.title = "Command sending"
+            tempem.description = "Please stand by this could take a minute"
+            tempem.colour = 0xFFFF00
+            tempm = await ctx.send(embed = tempem)
+            attempt = hit_endpoint('stop', server, timeout=30)
         except Exception as e:
+            await tempm.delete()
             em.title = 'Command error'
             em.colour = 0xFF0000
             em.description = 'Something went wrong'
-            print(f'Error while stopping server: {e}')
+            print(f'Error while stopping freedom-0{server}: {e}')
             await ctx.send(embed=em)
         else:
+            await tempm.delete()
             if 'error' in attempt.lower():
                 em.title = 'Command error'
                 em.colour = 0xFF0000
-                em.description = f'{attempt}'
+                em.description = f'freedom-0{server}: {attempt}'
                 await ctx.send(embed=em)
             else:
                 em.title = 'Success'
                 em.colour = 0x00FF00
-                em.description = f'{attempt}'
+                em.description = f'freedom-0{server}: {attempt}'
                 await ctx.send(embed=em)
 
     @commands.command(aliases=['adminconsole', 'ac'])
@@ -139,17 +178,17 @@ class ServerCommands(commands.Cog, name="Server Commands"):
             command += f'{arg} '
         try:
             if args[0] in ['mute', 'stfu', 'gtfo', 'ban', 'unban', 'unmute', 'smite', 'noob', 'tban', 'tempban', 'warn',
-                           'mv', 'kick', 'cc', 'say']:
+                           'mv', 'kick', 'cc', 'say', 'autoclear', 'autotp', 'toggle']:
                 self.write_telnet_session(server,
                                           bytes(command, 'ascii') + b"\r\n")
             elif args[0] == 'saconfig':
                 if args[1] not in ['add', 'remove']:
-                    raise NoPermission(['IS_SENIOR_ADMIN'])
+                    raise NoPermission(['SACONFIG_EDIT_FROM_ADMIN_CONSOLE'])
                 else:
                     self.write_telnet_session(server,
                                               bytes(command, 'ascii') + b"\r\n")
             else:
-                raise NoPermission(['IS_SENIOR_ADMIN'])
+                raise notAdminCommand()
         except Exception as e:
             em.title = 'Command error'
             em.colour = 0xFF0000
@@ -158,7 +197,7 @@ class ServerCommands(commands.Cog, name="Server Commands"):
         else:
             em.title = 'Success'
             em.colour = 0x00FF00
-            em.description = 'Command sent.'
+            em.description = f'Command sent to freedom-0{server}.'
             await ctx.send(embed=em)
 
     @commands.command()
@@ -181,12 +220,12 @@ class ServerCommands(commands.Cog, name="Server Commands"):
             if 'error' in attempt.lower():
                 em.title = 'Command error'
                 em.colour = 0xFF0000
-                em.description = f'{attempt}'
+                em.description = f'freedom-0{server}: {attempt}'
                 await ctx.send(embed=em)
             else:
                 em.title = 'Success'
                 em.colour = 0x00FF00
-                em.description = f'{attempt}'
+                em.description = f'freedom-0{server}: {attempt}'
                 await ctx.send(embed=em)
 
     @commands.command()
@@ -204,12 +243,12 @@ class ServerCommands(commands.Cog, name="Server Commands"):
             em.title = 'Command error'
             em.colour = 0xFF0000
             em.description = 'Something went wrong'
-            print(f'Error while restarting server: {e}')
+            print(f'Error while restarting freedom-0{server}: {e}')
             await ctx.send(embed=em)
         else:
             em.title = 'Success'
             em.colour = 0x00FF00
-            em.description = 'Server restarting.'
+            em.description = f'freedom-0{server} restarting.'
             await ctx.send(embed=em)
 
     @commands.command()
@@ -231,7 +270,7 @@ class ServerCommands(commands.Cog, name="Server Commands"):
         else:
             em.title = 'Success'
             em.colour = 0x00FF00
-            em.description = 'Command sent.'
+            em.description = f'Command sent to freedom-0{server}.'
             await ctx.send(embed=em)
 
     @commands.command(aliases=['status'])
@@ -242,24 +281,28 @@ class ServerCommands(commands.Cog, name="Server Commands"):
         if ctx.channel.id == 793632795598913546:
             server = 2
         if get_server_status(server):
-            em.description = 'Server is online'
+            em.description = f'freedom-0{server} is online'
             em.colour = 0x00FF00
         else:
-            em.description = 'Server is offline'
+            em.description = f'freedom-0{server} is offline'
             em.colour = 0xFF0000
         await ctx.send(embed=em)
 
     @commands.command(name='list', aliases=['l', 'who', 'lsit'])
     async def online(self, ctx):
         """Gives a list of online players."""
+        if ctx.channel.id == self.bot.gmod_server_chat:
+            return
         em = discord.Embed()
-        em.title = "Player List"
         config_file = read_json('config')
         if ctx.channel.id == 793632795598913546:
             ip = config_file['SERVER_IP_2']
+            server = 2
         else:
             ip = config_file['SERVER_IP']
+            server = 1
         port = config_file['PLAYERLIST_PORT']
+        em.title = f"Player List - freedom-0{server}"
         try:
             json = requests.get(f"http://{ip}:{port}/list?json=true", timeout=5).json()
             if json["online"] == 0:
@@ -382,6 +425,32 @@ class ServerCommands(commands.Cog, name="Server Commands"):
                 await message.add_reaction(clipboard)
                 fixed += 1
         await ctx.send(f'Fixed **{fixed}** reports')
+
+    @commands.command(aliases=['selfrestart', 'ar'], usage='tf!autorestart [on|off]')
+    @is_dev()
+    async def autorestart(self, ctx, *opt):
+        """Toggle the auto-restart feature.     Usage: tf!autorestart [on|off]"""
+        em = discord.Embed()
+        em.title = 'Automatic restart'
+        if not opt:
+            self.bot.auto_restart = not self.bot.auto_restart
+        elif opt[0].lower() in ['on', 'true']:
+            self.bot.auto_restart = True
+        elif opt[0].lower() in ['off', 'false']:
+            self.bot.auto_restart = False
+        else:
+            em.description = 'Invalid arguements'
+            em.colour = 0xFF0000
+            await ctx.send(embed=em)
+            return
+        if self.bot.auto_restart:
+            em.description = 'Servers will now automatically restart'
+            em.colour = 0x00FF00
+        if not self.bot.auto_restart:
+            em.description = 'Servers will no longer automatically restart'
+            em.colour = 0xFF0000
+
+        await ctx.send(embed=em)
 
 
 def setup(bot):
