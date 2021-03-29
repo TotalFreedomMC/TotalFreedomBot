@@ -81,7 +81,7 @@ def config_entry(entry):
     return read_json('config')[entry]
 
 
-def hit_endpoint(command, server=1):
+def hit_endpoint(command, server=1, timeout=10):
     config_file = read_json('config')
     if server == 1:
         ip = config_file['SERVER_IP']
@@ -95,9 +95,9 @@ def hit_endpoint(command, server=1):
     headers = {}
     try:
         response = json.loads(requests.request(
-            "GET", url, headers=headers, data=payload, timeout=5).text)
+            "GET", url, headers=headers, data=payload, timeout=timeout).text)
     except Exception as e:
-        response = dict(response=f'Connection Error: {e}')
+        raise Exception(f'Error while hitting endpoint: {e}')
     return response['response']
 
 
@@ -114,3 +114,12 @@ def get_server_status(server=1):
         return False
     else:
         return True
+
+
+def get_visible_player_count(list_json):
+    total = 0
+    for x in list_json:
+        if type(list_json[x]) == list:
+            total += len(list_json[x])
+    
+    return total
