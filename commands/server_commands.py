@@ -362,7 +362,7 @@ class ServerCommands(commands.Cog, name="Server Commands"):
                 await report.delete()
             time = embed.timestamp
             difference = datetime.now() - time
-            if difference.days >= 0:
+            if difference.days >= 1:
                 await report.delete()
                 await archived_reports_channel.send("Message archived because it is older than 24 hours", embed=embed)
                 count += 1
