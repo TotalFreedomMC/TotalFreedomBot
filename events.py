@@ -37,8 +37,7 @@ class Events(commands.Cog):
         print(
             f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [TELNET] Bot logged into Telnet as: {self.bot.telnet_object.username}')
 
-        reaction_data = read_json('config')
-        self.bot.reaction_roles = reaction_data['reaction_roles']
+        self.bot.reaction_roles = config['reaction_roles']
 
         print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Client] {self.bot.user.name} is online.')
         game = discord.Game('play.totalfreedom.me')
