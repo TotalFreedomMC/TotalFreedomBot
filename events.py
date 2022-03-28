@@ -23,25 +23,33 @@ class Events(commands.Cog):
         telnet_username = config['TELNET_USERNAME']
         telnet_password = config['TELNET_PASSWORD']
 
-        telnet_ip_2 = config['SERVER_IP_2']
-
         self.bot.reaction_roles = []
         self.bot.telnet_object = telnet(
             telnet_ip, telnet_port, telnet_username, telnet_password)
-        self.bot.telnet_object.connect()
+        try:
+            self.bot.telnet_object.connect()
+        except ConnectionError:
+            print("Freedom-01 Telnet failed to connect")
+        else:
+            print(
+                f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [TELNET] Bot logged into Telnet as: {self.bot.telnet_object.username}')
 
-        self.bot.telnet_object_2 = telnet(
-            telnet_ip_2, telnet_port, telnet_username, telnet_password)
-        self.bot.telnet_object_2.connect()
+        reaction_data = read_json('config')
+        self.bot.reaction_roles = reaction_data['reaction_roles']
 
-        print(
-            f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [TELNET] Bot logged into Telnet as: {self.bot.telnet_object.username}')
-
-        self.bot.reaction_roles = config['reaction_roles']
-
+        self.bot.command_cache = {}
+        print("command cache initalized")
         print(f'[{str(datetime.utcnow().replace(microsecond=0))[11:]} INFO]: [Client] {self.bot.user.name} is online.')
         game = discord.Game('play.totalfreedom.me')
         await self.bot.change_presence(status=discord.Status.online, activity=game)
+
+        print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Blacklist] Current blacklist:')
+        for user_id in self.bot.blacklisted_users:
+            user = self.bot.get_user(user_id)
+            if user:
+                print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Blacklist] - {user.name}')
+            else:
+                print(f'[{datetime.utcnow().replace(microsecond=0)} INFO]: [Blacklist] - {user_id}')
 
         guild_count = len(self.bot.guilds)
         print(
